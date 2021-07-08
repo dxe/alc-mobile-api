@@ -25,6 +25,8 @@ func config(key string) string {
 }
 
 func main() {
+	flag.Parse()
+
 	// TODO(mdempsky): Generalize.
 	r := http.DefaultServeMux
 
