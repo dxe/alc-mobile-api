@@ -7,4 +7,4 @@ RUN go build -o alc-mobile-api
 FROM alpine:latest
 RUN apk add --no-cache ca-certificates tzdata
 COPY --from=builder /app/alc-mobile-api /alc-mobile-api
-ENTRYPOINT ["./alc-mobile-api"]
+ENTRYPOINT ["./alc-mobile-api", "-prod"]
