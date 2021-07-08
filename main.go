@@ -16,6 +16,14 @@ var (
 	flagProd = flag.Bool("prod", false, "whether to run in production mode")
 )
 
+func config(key string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	log.Fatalf("missing configuration for %v", key)
+	panic("unreachable")
+}
+
 func main() {
 	// TODO(mdempsky): Generalize.
 	r := http.DefaultServeMux
