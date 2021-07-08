@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/dxe/alc-mobile-api/model"
+
 	"github.com/coreos/go-oidc"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/oauth2"
@@ -33,11 +35,10 @@ func main() {
 	r := http.DefaultServeMux
 
 	connectionString := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_PROTOCOL") + "/" + os.Getenv("DB_NAME") + "?parseTime=true&charset=utf8mb4"
-	// TODO(jhobbs): if prod, append &tls=true to connectionString
-	db, err := sqlx.Open("mysql", connectionString)
-	if err != nil {
-		panic(err)
+	if *flagProd {
+		connectionString += "&tls=true"
 	}
+	db := model.NewDB(connectionString)
 
 	clientID := os.Getenv("OAUTH_CLIENT_ID")
 	clientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
