@@ -19,4 +19,4 @@ jobs:
           repo: dxe/alc-mobile-api
           region: us-west-2
           tags: latest,${{ github.sha }}
-          dockerfile: Dockerfile
+          dockerfile: Dockerfile-prod
