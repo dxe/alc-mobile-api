@@ -10,6 +10,8 @@ import (
 	"github.com/coreos/go-oidc"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/oauth2"
+
+	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -30,8 +32,12 @@ func main() {
 	// TODO(mdempsky): Generalize.
 	r := http.DefaultServeMux
 
-	// TODO(mdempsky): Initialize with a connection to a real DB.
-	var db *sqlx.DB
+	connectionString := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_PROTOCOL") + "/" + os.Getenv("DB_NAME") + "?parseTime=true&charset=utf8mb4"
+	// TODO(jhobbs): if prod, append &tls=true to connectionString
+	db, err := sqlx.Open("mysql", connectionString)
+	if err != nil {
+		panic(err)
+	}
 
 	clientID := os.Getenv("OAUTH_CLIENT_ID")
 	clientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
