@@ -4,7 +4,6 @@ build
 docker-compose.yml
 .DS_Store
 .idea
-.dev_db
 
 alc-mobile-api
 
