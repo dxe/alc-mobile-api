@@ -41,13 +41,43 @@ func main() {
 		log.Fatalf("failed to create Google OIDC verifier: %v", err)
 	}
 
+	newServer := func(w http.ResponseWriter, r *http.Request) *server {
+		return &server{
+			conf:     conf,
+			verifier: verifier,
+
+			db: db,
+			w:  w,
+			r:  r,
+		}
+	}
+
 	handle := func(path string, method func(*server)) {
 		r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
-			method(&server{conf, verifier, db, w, r})
+			method(newServer(w, r))
 		})
 	}
 
-	handle("/", (*server).index)
+	// handleAuth is like handle, but it requires the user to be logged
+	// in with OAuth2 credentials first. Currently, this means with an
+	// @directactioneverywhere.com account, because our OAuth2 settings
+	// are configured to "Internal".
+	handleAuth := func(path string, method func(*server)) {
+		r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			s := newServer(w, r)
+
+			email, err := s.googleEmail()
+			if err != nil {
+				s.redirect(absURL("/login"))
+				return
+			}
+			s.email = email
+
+			method(s)
+		})
+	}
+
+	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
 	handle("/auth", (*server).auth)
 	handle("/healthcheck", (*server).health)
@@ -60,22 +90,18 @@ type server struct {
 	conf     *oauth2.Config
 	verifier *oidc.IDTokenVerifier
 
+	email string
+
 	db *sqlx.DB
 	w  http.ResponseWriter
 	r  *http.Request
 }
 
 func (s *server) index() {
-	email, err := s.googleEmail()
-	if err != nil {
-		s.redirect(absURL("/login"))
-		return
-	}
-
 	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(s.w, "Hello, %s\n", email)
-	if isAdmin(email) {
-		fmt.Fprintf(s.w, "(Psst, you're an admin.)\n")
+	fmt.Fprintf(s.w, "Hello, %s\n", s.email)
+	if isAdmin(s.email) {
+		fmt.Fprintf(s.w, "(Psst, you're an admin!)\n")
 	}
 }
 
