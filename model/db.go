@@ -12,11 +12,14 @@ func NewDB(connectionString string) *sqlx.DB {
 		panic(err)
 	}
 	log.Println("Connected to database.")
-	// TODO(jhobbs): Init db here or in main? How to wipe database in dev?
+	// TODO(jhobbs): Init db here or in main?
 	InitDatabase(db)
 	return db
 }
 
+// WipeDatabase drops all tables in the database.
+// It may be used for testing purposes, but is not planned to be used
+// on the actual dev or prod database.
 func WipeDatabase(db *sqlx.DB) {
 	// TODO(jhobbs): Return an error if prod.
 	db.MustExec(`DROP TABLE IF EXISTS conference`)
