@@ -17,9 +17,12 @@ type Conference struct {
 
 func ListConferences(db *sqlx.DB) ([]Conference, error) {
 	const query = "SELECT id, name, start_date, end_date FROM conferences"
-	conferences := make([]Conference, 0)
+	var conferences []Conference
 	if err := db.Select(&conferences, query); err != nil {
 		return conferences, fmt.Errorf("failed to list conferences: %w", err)
+	}
+	if conferences == nil {
+		return nil, errors.New("no conferences found")
 	}
 	return conferences, nil
 }

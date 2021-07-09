@@ -73,7 +73,7 @@ func (s *server) googleEmail() (string, error) {
 func (s *server) login() {
 	state, err := nonce()
 	if err != nil {
-		s.error(err)
+		s.serveJSON(nil, err)
 		return
 	}
 	http.SetCookie(s.w, &http.Cookie{
@@ -100,17 +100,17 @@ func (s *server) login() {
 func (s *server) auth() {
 	c, err := s.r.Cookie(cookieAuthState)
 	if err != nil {
-		s.error(err)
+		s.serveJSON(nil, err)
 		return
 	}
 	if c.Value != s.r.FormValue("state") {
-		s.error(errors.New("state mismatch"))
+		s.serveJSON(nil, errors.New("state mismatch"))
 		return
 	}
 
 	token, err := s.conf.Exchange(s.r.Context(), s.r.FormValue("code"))
 	if err != nil {
-		s.error(err)
+		s.serveJSON(nil, err)
 		return
 	}
 

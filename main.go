@@ -29,15 +29,6 @@ func config(key string) string {
 	panic("unreachable")
 }
 
-func writeJSON(w http.ResponseWriter, v interface{}) {
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	enc := json.NewEncoder(w)
-	err := enc.Encode(v)
-	if err != nil {
-		log.Printf("Error writing JSON: %v", err.Error())
-	}
-}
-
 func main() {
 	flag.Parse()
 
@@ -109,7 +100,7 @@ func main() {
 	handle("/info/list", (*server).listInfo)
 
 	// Authed API
-	// TODO(jhobbs): Implement authed API routes.
+	// TODO(jhobbs): Implement authed routes.
 
 	log.Println("Server started. Listening on port 8080.")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -126,20 +117,6 @@ type server struct {
 	r  *http.Request
 }
 
-func (s *server) writeJSONError(err error) {
-	writeJSON(s.w, map[string]string{
-		"status":  "error",
-		"message": err.Error(),
-	})
-}
-
-func (s *server) writeJSONData(data interface{}) {
-	writeJSON(s.w, map[string]interface{}{
-		"status": "success",
-		"data":   data,
-	})
-}
-
 func (s *server) index() {
 	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	if s.r.URL.Path != "/" {
@@ -153,31 +130,39 @@ func (s *server) index() {
 }
 
 func (s *server) listConferences() {
-	conferences, err := model.ListConferences(s.db)
-	if err != nil {
-		s.writeJSONError(err)
-		return
-	}
-	s.writeJSONData(conferences)
+	s.serveJSON(model.ListConferences(s.db))
 }
 
 func (s *server) listInfo() {
-	info, err := model.ListInfo(s.db)
-	if err != nil {
-		s.writeJSONError(err)
-		return
-	}
-	s.writeJSONData(info)
+	s.serveJSON(model.ListInfo(s.db))
 }
 
 func (s *server) health() {
-	s.w.WriteHeader(http.StatusOK)
-	s.w.Write([]byte("OK"))
+	s.serveJSON("OK", nil)
 }
 
-func (s *server) error(err error) {
-	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintln(s.w, err)
+func (s *server) serveJSON(data interface{}, err error) {
+	if err != nil {
+		s.writeJSON(map[string]string{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+	s.w.WriteHeader(http.StatusOK)
+	s.writeJSON(map[string]interface{}{
+		"status": "success",
+		"data":   data,
+	})
+}
+
+func (s *server) writeJSON(v interface{}) {
+	s.w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	enc := json.NewEncoder(s.w)
+	err := enc.Encode(v)
+	if err != nil {
+		log.Printf("Error writing JSON: %v", err.Error())
+	}
 }
 
 func (s *server) redirect(dest string) {
