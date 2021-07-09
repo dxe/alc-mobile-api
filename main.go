@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -28,20 +29,31 @@ func config(key string) string {
 	panic("unreachable")
 }
 
+func writeJSON(w http.ResponseWriter, v interface{}) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	enc := json.NewEncoder(w)
+	err := enc.Encode(v)
+	if err != nil {
+		log.Printf("Error writing JSON: %v", err.Error())
+	}
+}
+
 func main() {
 	flag.Parse()
 
 	// TODO(mdempsky): Generalize.
 	r := http.DefaultServeMux
 
-	connectionString := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@" + os.Getenv("DB_PROTOCOL") + "/" + os.Getenv("DB_NAME") + "?parseTime=true&charset=utf8mb4"
+	connectionString := config("DB_USER") + ":" + config("DB_PASSWORD") +
+		"@" + config("DB_PROTOCOL") + "/" + config("DB_NAME") +
+		"?parseTime=true&charset=utf8mb4"
 	if *flagProd {
 		connectionString += "&tls=true"
 	}
 	db := model.NewDB(connectionString)
 
-	clientID := os.Getenv("OAUTH_CLIENT_ID")
-	clientSecret := os.Getenv("OAUTH_CLIENT_SECRET")
+	clientID := config("OAUTH_CLIENT_ID")
+	clientSecret := config("OAUTH_CLIENT_SECRET")
 
 	conf, verifier, err := newGoogleVerifier(clientID, clientSecret)
 	if err != nil {
@@ -84,10 +96,17 @@ func main() {
 		})
 	}
 
+	// Admin pages
 	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
 	handle("/auth", (*server).auth)
 	handle("/healthcheck", (*server).health)
+
+	// Unauthed API
+	handle("/conference/list", (*server).listConferences)
+
+	// Authed API
+	// TODO(jhobbs): Implement authed API routes.
 
 	log.Println("Server started. Listening on port 8080.")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -106,10 +125,29 @@ type server struct {
 
 func (s *server) index() {
 	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	if s.r.URL.Path != "/" {
+		http.NotFound(s.w, s.r)
+		return
+	}
 	fmt.Fprintf(s.w, "Hello, %s\n", s.email)
 	if isAdmin(s.email) {
 		fmt.Fprintf(s.w, "(Psst, you're an admin!)\n")
 	}
+}
+
+func (s *server) listConferences() {
+	conferences, err := model.ListConferences(s.db)
+	if err != nil {
+		writeJSON(s.w, map[string]string{
+			"status":  "error",
+			"message": err.Error(),
+		})
+		return
+	}
+	writeJSON(s.w, map[string]interface{}{
+		"status":      "success",
+		"conferences": conferences,
+	})
 }
 
 func (s *server) health() {

@@ -22,7 +22,7 @@ func NewDB(connectionString string) *sqlx.DB {
 // on the actual dev or prod database.
 func WipeDatabase(db *sqlx.DB) {
 	// TODO(jhobbs): Return an error if prod.
-	db.MustExec(`DROP TABLE IF EXISTS conference`)
+	db.MustExec(`DROP TABLE IF EXISTS conferences`)
 	db.MustExec(`DROP TABLE IF EXISTS users`)
 	db.MustExec(`DROP TABLE IF EXISTS events`)
 	db.MustExec(`DROP TABLE IF EXISTS locations`)
