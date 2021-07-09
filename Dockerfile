@@ -3,6 +3,7 @@ RUN mkdir /app
 ADD . /app
 WORKDIR /app
 
+RUN apk update && apk add bash
 RUN go get github.com/githubnemo/CompileDaemon
 
-ENTRYPOINT CompileDaemon --build="go build -o alc-mobile-api ." --command=./alc-mobile-api
+ENTRYPOINT ./wait-for-it.sh db:3306 -- CompileDaemon --build="go build -o alc-mobile-api ." --command=./alc-mobile-api
