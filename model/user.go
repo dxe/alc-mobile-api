@@ -15,6 +15,8 @@ type User struct {
 	DevicePlatform string `db:"device_platform" json:"device_platform"`
 }
 
+// TODO(jhobbs): Be sure to use conference id.
+
 func getAllUsers(db *sqlx.DB) ([]User, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")

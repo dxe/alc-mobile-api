@@ -1,7 +1,7 @@
 package model
 
 import (
-	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -14,7 +14,11 @@ type Info struct {
 	Icon     string `db:"icon" json:"icon"`
 }
 
-func getAllInfo(db *sqlx.DB) ([]Info, error) {
-	// TODO: Implement this function.
-	return nil, errors.New("not yet implemented")
+func ListInfo(db *sqlx.DB) ([]Info, error) {
+	const query = "SELECT id, title, subtitle, content, icon FROM info"
+	info := make([]Info, 0)
+	if err := db.Select(&info, query); err != nil {
+		return info, fmt.Errorf("failed to list info: %w", err)
+	}
+	return info, nil
 }

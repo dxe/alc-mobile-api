@@ -18,6 +18,8 @@ type Event struct {
 	ImageID     int       `db:"image_id" json:"image_id"`       // TODO(jhobbs): Handle this the same way?
 }
 
+// TODO(jhobbs): Be sure to use conference id.
+
 func getAllEvents(db *sqlx.DB) ([]Event, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")

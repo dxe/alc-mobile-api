@@ -17,6 +17,8 @@ type Announcement struct {
 	Sent      bool      `db:"sent" json:"sent"`
 }
 
+// TODO(jhobbs): Be sure to use conference id.
+
 func getAllAnnouncements(db *sqlx.DB) ([]Announcement, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")

@@ -106,6 +106,7 @@ func main() {
 
 	// Unauthed API
 	handle("/conference/list", (*server).listConferences)
+	handle("/info/list", (*server).listInfo)
 
 	// Authed API
 	// TODO(jhobbs): Implement authed API routes.
@@ -125,6 +126,20 @@ type server struct {
 	r  *http.Request
 }
 
+func (s *server) writeJSONError(err error) {
+	writeJSON(s.w, map[string]string{
+		"status":  "error",
+		"message": err.Error(),
+	})
+}
+
+func (s *server) writeJSONData(data interface{}) {
+	writeJSON(s.w, map[string]interface{}{
+		"status": "success",
+		"data":   data,
+	})
+}
+
 func (s *server) index() {
 	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	if s.r.URL.Path != "/" {
@@ -140,16 +155,19 @@ func (s *server) index() {
 func (s *server) listConferences() {
 	conferences, err := model.ListConferences(s.db)
 	if err != nil {
-		writeJSON(s.w, map[string]string{
-			"status":  "error",
-			"message": err.Error(),
-		})
+		s.writeJSONError(err)
 		return
 	}
-	writeJSON(s.w, map[string]interface{}{
-		"status":      "success",
-		"conferences": conferences,
-	})
+	s.writeJSONData(conferences)
+}
+
+func (s *server) listInfo() {
+	info, err := model.ListInfo(s.db)
+	if err != nil {
+		s.writeJSONError(err)
+		return
+	}
+	s.writeJSONData(info)
 }
 
 func (s *server) health() {

@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS conferences (
 	db.MustExec(`
 CREATE TABLE IF NOT EXISTS users (
 	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	conference_id INTEGER,
 	name VARCHAR(200) NOT NULL DEFAULT '',
     email VARCHAR(200) NOT NULL DEFAULT '',
     device_id VARCHAR(200),
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS users (
 	db.MustExec(`
 CREATE TABLE IF NOT EXISTS events (
 	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	conference_id INTEGER,
 	name VARCHAR(200),
     description TEXT,
     start_time DATETIME NOT NULL,
@@ -107,6 +109,7 @@ CREATE TABLE IF NOT EXISTS info (
 	db.MustExec(`
 CREATE TABLE IF NOT EXISTS announcements (
 	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	conference_id INTEGER,
 	title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
     icon VARCHAR(30) NOT NULL,
