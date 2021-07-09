@@ -103,7 +103,6 @@ func main() {
 	handle("/event/list", (*server).listEvents)
 
 	// Authed API
-	handleAuth("/announcement/scheduled", (*server).listScheduledAnnouncements)
 	// TODO(jhobbs): Implement authed routes.
 
 	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("./frontend"))))
@@ -167,14 +166,6 @@ func (s *server) listAnnouncements() {
 	// TODO: pass in the conference id as a parameter
 	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
 		IncludeScheduled: false,
-		ConferenceID:     1,
-	}))
-}
-
-func (s *server) listScheduledAnnouncements() {
-	// TODO: pass in the conference id as a parameter
-	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
-		IncludeScheduled: true,
 		ConferenceID:     1,
 	}))
 }
