@@ -38,7 +38,6 @@ func newGoogleVerifier(clientID, clientSecret string) (*oauth2.Config, *oidc.IDT
 }
 
 func isAdmin(email string) bool {
-	// TODO(mdempsky): Use adb_users instead?
 	return email == "matthew@dempsky.org" ||
 		strings.HasSuffix(email, "@directactioneverywhere.com")
 }
@@ -122,7 +121,7 @@ func (s *server) auth() {
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 	})
-	s.redirect(absURL("/"))
+	s.redirect(absURL("/admin"))
 }
 
 // nonce returns a 256-bit random hex string.

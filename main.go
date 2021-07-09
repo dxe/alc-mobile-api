@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -91,6 +91,7 @@ func main() {
 	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
 	handle("/auth", (*server).auth)
+	handleAuth("/admin", (*server).admin)
 
 	// Healthcheck page for load balancer
 	handle("/healthcheck", (*server).health)
@@ -102,7 +103,10 @@ func main() {
 	handle("/event/list", (*server).listEvents)
 
 	// Authed API
+	handleAuth("/announcement/scheduled", (*server).listScheduledAnnouncements)
 	// TODO(jhobbs): Implement authed routes.
+
+	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("./frontend"))))
 
 	log.Println("Server started. Listening on port 8080.")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -125,10 +129,30 @@ func (s *server) index() {
 		http.NotFound(s.w, s.r)
 		return
 	}
-	fmt.Fprintf(s.w, "Hello, %s\n", s.email)
-	if isAdmin(s.email) {
-		fmt.Fprintf(s.w, "(Psst, you're an admin!)\n")
+	s.redirect(absURL("/admin"))
+}
+
+func (s *server) renderTemplate(name string, pageData interface{}) {
+	type templateData struct {
+		UserEmail string
+		PageData  interface{}
 	}
+	data := templateData{
+		UserEmail: s.email,
+		PageData:  pageData,
+	}
+
+	tmpl, err := template.New("").ParseGlob("static/*.html")
+	if err != nil {
+		panic("failed to parse template")
+	}
+	if err := tmpl.ExecuteTemplate(s.w, name, data); err != nil {
+		panic("failed to execute template")
+	}
+}
+
+func (s *server) admin() {
+	s.renderTemplate("index.html", "hello")
 }
 
 func (s *server) listConferences() {
@@ -143,6 +167,14 @@ func (s *server) listAnnouncements() {
 	// TODO: pass in the conference id as a parameter
 	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
 		IncludeScheduled: false,
+		ConferenceID:     1,
+	}))
+}
+
+func (s *server) listScheduledAnnouncements() {
+	// TODO: pass in the conference id as a parameter
+	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
+		IncludeScheduled: true,
 		ConferenceID:     1,
 	}))
 }
