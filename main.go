@@ -100,6 +100,8 @@ func main() {
 	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
 	handle("/auth", (*server).auth)
+
+	// Healthcheck page for load balancer
 	handle("/healthcheck", (*server).health)
 
 	// Unauthed API
@@ -165,11 +167,6 @@ func (s *server) redirect(dest string) {
 }
 
 func absURL(path string) string {
-	// TODO(mdempsky): Use URL relative path resolution here? Or add a
-	// flag to control the base URL?
-	base := "http://localhost:8080"
-	if *flagProd {
-		base = "https://alc-mobile-api.dxe.io"
-	}
-	return base + path
+	// TODO(mdempsky): Use URL relative path resolution here?
+	return config("BASE_URL") + path
 }
