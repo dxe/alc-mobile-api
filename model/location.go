@@ -16,7 +16,7 @@ type Location struct {
 	Lng     float64 `db:"lng" json:"lng"`
 }
 
-func getAllLocations(db *sqlx.DB) ([]Location, error) {
+func ListLocations(db *sqlx.DB) ([]Location, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")
 }

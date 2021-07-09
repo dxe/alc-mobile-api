@@ -12,7 +12,7 @@ type RSVP struct {
 	Attending bool `db:"attending" json:"attending"`
 }
 
-func getAllRSVPs(db *sqlx.DB) ([]RSVP, error) {
+func ListRSVPs(db *sqlx.DB) ([]RSVP, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")
 }

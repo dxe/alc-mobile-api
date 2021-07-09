@@ -98,6 +98,8 @@ func main() {
 	// Unauthed API
 	handle("/conference/list", (*server).listConferences)
 	handle("/info/list", (*server).listInfo)
+	handle("/announcement/list", (*server).listAnnouncements)
+	handle("/event/list", (*server).listEvents)
 
 	// Authed API
 	// TODO(jhobbs): Implement authed routes.
@@ -135,6 +137,21 @@ func (s *server) listConferences() {
 
 func (s *server) listInfo() {
 	s.serveJSON(model.ListInfo(s.db))
+}
+
+func (s *server) listAnnouncements() {
+	// TODO: pass in the conference id as a parameter
+	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
+		IncludeScheduled: false,
+		ConferenceID:     1,
+	}))
+}
+
+func (s *server) listEvents() {
+	// TODO: pass in the conference id as a parameter
+	s.serveJSON(model.ListEvents(s.db, model.EventOptions{
+		ConferenceID: 1,
+	}))
 }
 
 func (s *server) health() {

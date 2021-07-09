@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -17,9 +18,26 @@ type Announcement struct {
 	Sent      bool      `db:"sent" json:"sent"`
 }
 
-// TODO(jhobbs): Be sure to use conference id.
+type AnnouncementOptions struct {
+	IncludeScheduled bool
+	ConferenceID     int
+}
 
-func getAllAnnouncements(db *sqlx.DB) ([]Announcement, error) {
-	// TODO: Implement this function.
-	return nil, errors.New("not yet implemented")
+func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement, error) {
+	if options.ConferenceID == 0 {
+		return nil, errors.New("must provide conference id")
+	}
+
+	query := "SELECT id, title, message, icon, created_by, send_time, sent FROM announcements WHERE conference_id = ?"
+	if !options.IncludeScheduled {
+		query += " AND sent = 1"
+	}
+	var announcements []Announcement
+	if err := db.Select(&announcements, query, options.ConferenceID); err != nil {
+		return announcements, fmt.Errorf("failed to list announcements: %w", err)
+	}
+	if announcements == nil {
+		return nil, errors.New("no announcements found")
+	}
+	return announcements, nil
 }

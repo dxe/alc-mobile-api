@@ -17,7 +17,7 @@ type User struct {
 
 // TODO(jhobbs): Be sure to use conference id.
 
-func getAllUsers(db *sqlx.DB) ([]User, error) {
+func ListUsers(db *sqlx.DB) ([]User, error) {
 	// TODO: Implement this function.
 	return nil, errors.New("not yet implemented")
 }
