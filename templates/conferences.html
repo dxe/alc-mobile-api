@@ -8,13 +8,6 @@
     <link rel="stylesheet" href="/static/bulma-responsive-tables/main.min.css">
   </head>
   <body>
-
-  {{ .PageData }}
-
-  {{range $c := .PageData}}
-  <p>{{$c.Name}} | {{$c.StartDate}}</p>
-  {{end}}
-
   <section class="section">
     <div class="container">
       <div class="b-table">
@@ -23,16 +16,18 @@
             <thead>
             <tr>
               <th>Name</th>
-              <th>Company</th>
-              <th>City</th>
+              <th>Start Date</th>
+              <th>End Date</th>
               <th></th>
             </tr>
             </thead>
             <tbody>
+
+            {{range $conference := .PageData}}
             <tr>
-              <td data-label="Name">Test</td>
-              <td data-label="Company">Testing</td>
-              <td data-label="City">Tester</td>
+              <td data-label="Name">{{$$conference.Name}}</td>
+              <td data-label="Start Date">{{$$conference.StartDate}}</td>
+              <td data-label="End Date">{{$$conference.EndDate}}</td>
               <td class="is-actions-cell">
                 <div class="buttons is-right">
                   <button class="button is-small is-primary" type="button">
@@ -44,6 +39,8 @@
                 </div>
               </td>
             </tr>
+            {{end}}
+
             </tbody>
           </table>
         </div>
