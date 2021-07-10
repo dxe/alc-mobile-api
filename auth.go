@@ -78,7 +78,7 @@ func (s *server) login() {
 	http.SetCookie(s.w, &http.Cookie{
 		Name:     cookieAuthState,
 		Value:    state,
-		MaxAge:   3600,
+		MaxAge:   36000,
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 	})
@@ -94,6 +94,19 @@ func (s *server) login() {
 	}
 
 	s.redirect(s.conf.AuthCodeURL(state, opts...))
+}
+
+func (s *server) logout() {
+	http.SetCookie(s.w, &http.Cookie{
+		Name:   cookieAuthState,
+		MaxAge: -1,
+	})
+	http.SetCookie(s.w, &http.Cookie{
+		Name:   cookieIDToken,
+		MaxAge: -1,
+	})
+
+	s.redirect(absURL("/admin"))
 }
 
 func (s *server) auth() {

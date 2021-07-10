@@ -90,6 +90,7 @@ func main() {
 	// Admin pages
 	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
+	handle("/logout", (*server).logout)
 	handle("/auth", (*server).auth)
 	handleAuth("/admin", (*server).admin)
 	handleAuth("/admin/conferences", (*server).adminConferences)
