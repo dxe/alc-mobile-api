@@ -25,9 +25,9 @@
 
             {{range $conference := .PageData}}
             <tr>
-              <td data-label="Name">{{$$conference.Name}}</td>
-              <td data-label="Start Date">{{$$conference.StartDate}}</td>
-              <td data-label="End Date">{{$$conference.EndDate}}</td>
+              <td data-label="Name">{{$conference.Name}}</td>
+              <td data-label="Start Date">{{$conference.StartDate}}</td>
+              <td data-label="End Date">{{$conference.EndDate}}</td>
               <td class="is-actions-cell">
                 <div class="buttons is-right">
                   <button class="button is-small is-primary" type="button">
