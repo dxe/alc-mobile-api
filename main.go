@@ -132,10 +132,12 @@ func (s *server) index() {
 func (s *server) renderTemplate(name string, pageData interface{}) {
 	type templateData struct {
 		UserEmail string
+		PageName  string
 		PageData  interface{}
 	}
 	data := templateData{
 		UserEmail: s.email,
+		PageName:  name,
 		PageData:  pageData,
 	}
 
@@ -143,13 +145,14 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 	if err != nil {
 		panic("failed to parse template")
 	}
-	if err := tmpl.ExecuteTemplate(s.w, name, data); err != nil {
+	if err := tmpl.ExecuteTemplate(s.w, name+".html", data); err != nil {
+		log.Println(err)
 		panic("failed to execute template")
 	}
 }
 
 func (s *server) admin() {
-	s.renderTemplate("index.html", nil)
+	s.renderTemplate("index", nil)
 }
 
 func (s *server) adminConferences() {
@@ -158,7 +161,7 @@ func (s *server) adminConferences() {
 	if err != nil && err.Error() != "no conferences found" {
 		panic(err)
 	}
-	s.renderTemplate("conferences.html", conferenceData)
+	s.renderTemplate("conferences", conferenceData)
 }
 
 func (s *server) listConferences() {
