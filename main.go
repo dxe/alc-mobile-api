@@ -16,13 +16,11 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 
-	"github.com/dxe/alc-mobile-api/model"
-
 	"github.com/coreos/go-oidc"
+	"github.com/dxe/alc-mobile-api/model"
+	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/oauth2"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 var (
@@ -54,19 +52,48 @@ func configInt(key string) int {
 const isoTimeLayout = "2006-01-02T15:04:05.000Z"
 const dbTimeLayout = "2006-01-02 15:04:05"
 
+// getDSN returns the DSN string for the backing MySQL database.
+func getDSN() string {
+	var cfg *mysql.Config
+
+	if dsn := os.Getenv("DB_DSN"); dsn != "" {
+		var err error
+		cfg, err = mysql.ParseDSN(dsn)
+		if err != nil {
+			log.Fatalf("failed to parse MySQL DSN: %v", err)
+		}
+	} else {
+		// TODO(mdempsky): Change configs to use DB_DSN instead, and then
+		// remove -prod flag.
+		cfg = mysql.NewConfig()
+		cfg.User = config("DB_USER")
+		cfg.Passwd = config("DB_PASSWORD")
+		cfg.Net = config("DB_PROTOCOL")
+		cfg.DBName = config("DB_NAME")
+		if *flagProd {
+			cfg.TLSConfig = "true"
+		}
+	}
+
+	cfg.ParseTime = true
+	cfg.Params = map[string]string{
+		// TODO(mdempsky): Is this still necessary/appropriate? The MySQL
+		// driver now recommends using the "collation" parameter instead,
+		// which defaults to "utf8mb4_general_ci".
+		//
+		// See https://github.com/go-sql-driver/mysql#unicode-support.
+		"charset": "utf8mb4",
+	}
+	return cfg.FormatDSN()
+}
+
 func main() {
 	flag.Parse()
 
 	// TODO(mdempsky): Generalize.
 	r := http.DefaultServeMux
 
-	connectionString := config("DB_USER") + ":" + config("DB_PASSWORD") +
-		"@" + config("DB_PROTOCOL") + "/" + config("DB_NAME") +
-		"?parseTime=true&charset=utf8mb4"
-	if *flagProd {
-		connectionString += "&tls=true"
-	}
-	db := model.NewDB(connectionString)
+	db := model.NewDB(getDSN())
 
 	// TODO: Consider not doing this each time the application loads.
 	// It may be better to do it via a script instead.
