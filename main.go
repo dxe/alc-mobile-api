@@ -94,6 +94,10 @@ func main() {
 	handle("/auth", (*server).auth)
 	handleAuth("/admin", (*server).admin)
 	handleAuth("/admin/conferences", (*server).adminConferences)
+	handleAuth("/admin/locations", (*server).adminLocations)
+	handleAuth("/admin/events", (*server).adminEvents)
+	handleAuth("/admin/info", (*server).adminInfo)
+	handleAuth("/admin/announcements", (*server).adminAnnouncements)
 
 	// Healthcheck page for load balancer
 	handle("/healthcheck", (*server).health)
@@ -144,6 +148,7 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 
 	tmpl, err := template.New("").ParseGlob("templates/*.html")
 	if err != nil {
+		log.Println(err)
 		panic("failed to parse template")
 	}
 	if err := tmpl.ExecuteTemplate(s.w, name+".html", data); err != nil {
@@ -163,6 +168,42 @@ func (s *server) adminConferences() {
 		panic(err)
 	}
 	s.renderTemplate("conferences", conferenceData)
+}
+
+func (s *server) adminLocations() {
+	locationData, err := model.ListLocations(s.db)
+	// TODO(jhobbs): Consider not returning an error if no locations are found to make this more simple.
+	if err != nil && err.Error() != "no locations found" {
+		panic(err)
+	}
+	s.renderTemplate("locations", locationData)
+}
+
+func (s *server) adminEvents() {
+	eventData, err := model.ListEvents(s.db, model.EventOptions{ConferenceID: 1})
+	// TODO(jhobbs): Consider not returning an error if no events are found to make this more simple.
+	if err != nil && err.Error() != "no events found" {
+		panic(err)
+	}
+	s.renderTemplate("events", eventData)
+}
+
+func (s *server) adminInfo() {
+	infoData, err := model.ListInfo(s.db)
+	// TODO(jhobbs): Consider not returning an error if no info is found to make this more simple.
+	if err != nil && err.Error() != "no info found" {
+		panic(err)
+	}
+	s.renderTemplate("info", infoData)
+}
+
+func (s *server) adminAnnouncements() {
+	announcementData, err := model.ListAnnouncements(s.db, model.AnnouncementOptions{ConferenceID: 1, IncludeScheduled: true})
+	// TODO(jhobbs): Consider not returning an error if no announcements are found to make this more simple.
+	if err != nil && err.Error() != "no announcements found" {
+		panic(err)
+	}
+	s.renderTemplate("announcements", announcementData)
 }
 
 func (s *server) listConferences() {

@@ -1,0 +1,50 @@
+{{template "header.html" .}}
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">Locations</h1>
+    <div class="b-table">
+      <div class="table-wrapper has-mobile-cards">
+        <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
+          <thead>
+          <tr>
+            <th>Name</th>
+            <th>Place ID</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>Lat</th>
+            <th>Lng</th>
+            <th></th>
+          </tr>
+          </thead>
+          <tbody>
+
+          {{range .PageData}}
+          <tr>
+            <td data-label="Name">{{.Name}}</td>
+            <td data-label="Place ID">{{.PlaceID}}</td>
+            <td data-label="Address">{{.Address}}</td>
+            <td data-label="City">{{.City}}</td>
+            <td data-label="Lat">{{.Lat}}</td>
+            <td data-label="Lng">{{.Lng}}</td>
+            <td class="is-actions-cell">
+              <div class="buttons is-right">
+                <button class="button is-small is-primary" type="button">
+                  Edit
+                </button>
+                <button class="button is-small is-danger jb-modal" data-target="sample-modal" type="button">
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+          {{end}}
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{template "footer.html" .}}

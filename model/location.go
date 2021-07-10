@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -17,6 +18,13 @@ type Location struct {
 }
 
 func ListLocations(db *sqlx.DB) ([]Location, error) {
-	// TODO: Implement this function.
-	return nil, errors.New("not yet implemented")
+	const query = "SELECT id, name, place_id, address, city, lat, lng FROM locations"
+	var locations []Location
+	if err := db.Select(&locations, query); err != nil {
+		return locations, fmt.Errorf("failed to list locations: %w", err)
+	}
+	if locations == nil {
+		return nil, errors.New("no locations found")
+	}
+	return locations, nil
 }
