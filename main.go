@@ -92,6 +92,7 @@ func main() {
 	handle("/login", (*server).login)
 	handle("/auth", (*server).auth)
 	handleAuth("/admin", (*server).admin)
+	handleAuth("/admin/conferences", (*server).adminConferences)
 
 	// Healthcheck page for load balancer
 	handle("/healthcheck", (*server).health)
@@ -102,10 +103,7 @@ func main() {
 	handle("/announcement/list", (*server).listAnnouncements)
 	handle("/event/list", (*server).listEvents)
 
-	// Authed API
-	// TODO(jhobbs): Implement authed routes.
-
-	http.Handle("/frontend/", http.StripPrefix("/frontend/", http.FileServer(http.Dir("./frontend"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	log.Println("Server started. Listening on port 8080.")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -141,7 +139,7 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 		PageData:  pageData,
 	}
 
-	tmpl, err := template.New("").ParseGlob("static/*.html")
+	tmpl, err := template.New("").ParseGlob("templates/*.html")
 	if err != nil {
 		panic("failed to parse template")
 	}
@@ -151,7 +149,16 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 }
 
 func (s *server) admin() {
-	s.renderTemplate("index.html", "hello")
+	s.renderTemplate("index.html", nil)
+}
+
+func (s *server) adminConferences() {
+	conferenceData, err := model.ListConferences(s.db)
+	// TODO(jhobbs): Consider not returning an error if no conferences are found to make this more simple.
+	if err != nil && err.Error() != "no conferences found" {
+		panic(err)
+	}
+	s.renderTemplate("conferences.html", conferenceData)
 }
 
 func (s *server) listConferences() {
