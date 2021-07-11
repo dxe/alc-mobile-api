@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/dxe/alc-mobile-api/model"
 
@@ -154,7 +155,12 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 		PageData:  pageData,
 	}
 
-	tmpl, err := template.New("").ParseGlob("templates/*.html")
+	tmpl, err := template.New("").Funcs(template.FuncMap{
+		"emailToName": func(email string) string {
+			components := strings.Split(email, "@")
+			return strings.Title(components[0])
+		},
+	}).ParseGlob("templates/*.html")
 	if err != nil {
 		log.Println(err)
 		panic("failed to parse template")

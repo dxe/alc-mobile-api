@@ -9,7 +9,6 @@
           <thead>
           <tr>
             <th>Title</th>
-            <th>Message</th>
             <th>Created By</th>
             <th>Send Time</th>
             <th>Sent</th>
@@ -21,8 +20,7 @@
           {{range .PageData}}
           <tr>
             <td data-label="Title">{{.Title}}</td>
-            <td data-label="Message">{{.Message}}</td>
-            <td data-label="Created By">{{.CreatedBy}}</td>
+            <td data-label="Created By">{{emailToName .CreatedBy}}</td>
             <td data-label="Send Time">{{.SendTime}}</td>
             <td data-label="Sent">{{.Sent}}</td>
             <td class="is-actions-cell">

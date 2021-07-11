@@ -28,7 +28,10 @@ func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement
 		return nil, errors.New("must provide conference id")
 	}
 
-	query := "SELECT id, title, message, icon, created_by, send_time, sent FROM announcements WHERE conference_id = ?"
+	query := `
+SELECT id, title, message, icon, created_by, send_time, sent FROM announcements WHERE conference_id = ?
+ORDER BY send_time asc
+`
 	if !options.IncludeScheduled {
 		query += " AND sent = 1"
 	}

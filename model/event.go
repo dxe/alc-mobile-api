@@ -30,7 +30,9 @@ func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
 	}
 
 	query := `SELECT id, name, description, start_time, length, key_event, location_id, IFNULL(image_id, 0) as image_id
-FROM events WHERE conference_id = ?`
+FROM events WHERE conference_id = ?
+ORDER BY start_time asc
+`
 
 	var events []Event
 	if err := db.Select(&events, query, options.ConferenceID); err != nil {

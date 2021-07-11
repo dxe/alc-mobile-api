@@ -18,7 +18,10 @@ type Location struct {
 }
 
 func ListLocations(db *sqlx.DB) ([]Location, error) {
-	const query = "SELECT id, name, place_id, address, city, lat, lng FROM locations"
+	const query = `
+SELECT id, name, place_id, address, city, lat, lng FROM locations
+ORDER BY name asc
+`
 	var locations []Location
 	if err := db.Select(&locations, query); err != nil {
 		return locations, fmt.Errorf("failed to list locations: %w", err)
