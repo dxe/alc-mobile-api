@@ -43,6 +43,14 @@ func main() {
 	}
 	db := model.NewDB(connectionString)
 
+	// TODO: Consider not doing this each time the application loads.
+	// It may be better to do it via a script instead.
+	if !*flagProd {
+		model.WipeDatabase(db)
+		model.InitDatabase(db)
+		model.InsertMockData(db)
+	}
+
 	clientID := config("OAUTH_CLIENT_ID")
 	clientSecret := config("OAUTH_CLIENT_SECRET")
 

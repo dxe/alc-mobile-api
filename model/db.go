@@ -12,24 +12,7 @@ func NewDB(connectionString string) *sqlx.DB {
 		panic(err)
 	}
 	log.Println("Connected to database.")
-	// TODO(jhobbs): Init db here or in main?
-	InitDatabase(db)
 	return db
-}
-
-// WipeDatabase drops all tables in the database.
-// It may be used for testing purposes, but is not planned to be used
-// on the actual dev or prod database.
-func WipeDatabase(db *sqlx.DB) {
-	// TODO(jhobbs): Return an error if prod.
-	db.MustExec(`DROP TABLE IF EXISTS conferences`)
-	db.MustExec(`DROP TABLE IF EXISTS users`)
-	db.MustExec(`DROP TABLE IF EXISTS events`)
-	db.MustExec(`DROP TABLE IF EXISTS locations`)
-	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
-	db.MustExec(`DROP TABLE IF EXISTS images`)
-	db.MustExec(`DROP TABLE IF EXISTS info`)
-	db.MustExec(`DROP TABLE IF EXISTS announcements`)
 }
 
 func InitDatabase(db *sqlx.DB) {
@@ -117,6 +100,83 @@ CREATE TABLE IF NOT EXISTS announcements (
     send_time DATETIME,
     sent TINYINT NOT NULL DEFAULT '0'
 )
+`)
+
+}
+
+// WipeDatabase drops all tables in the database.
+// It may be used for testing purposes, but is not planned to be used
+// on the actual dev or prod database.
+func WipeDatabase(db *sqlx.DB) {
+	// TODO(jhobbs): Return an error if prod.
+	db.MustExec(`DROP TABLE IF EXISTS conferences`)
+	db.MustExec(`DROP TABLE IF EXISTS users`)
+	db.MustExec(`DROP TABLE IF EXISTS events`)
+	db.MustExec(`DROP TABLE IF EXISTS locations`)
+	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
+	db.MustExec(`DROP TABLE IF EXISTS images`)
+	db.MustExec(`DROP TABLE IF EXISTS info`)
+	db.MustExec(`DROP TABLE IF EXISTS announcements`)
+}
+
+func InsertMockData(db *sqlx.DB) {
+	db.MustExec(`
+INSERT INTO announcements (id, title, message, icon, created_by, send_time, sent, conference_id)
+VALUES
+	(1,'consequat ut a','Vestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio.','exclamation-triangle','almira@directactioneverywhere.com','2021-05-28 03:40:00',0,1),
+	(2,'porttitor pede justo','Vivamus in felis eu sapien cursus vestibulum. Proin eu mi. Sa ac enim. In tempor, turpis nec euismod scelerisque, quam turpis adipiscing lorem, vitae mattis nibh ligula nec sem.','cloud','cassie@directactioneverywhere.com','2020-08-08 16:49:15',0,1),
+	(3,'augue aliquam erat','Donec ut dolor. Morbi vel lectus in quam fringilla rhoncus. Mauris enim leo, rhoncus sed, vestibulum sit amet, cursus id, turpis.','newspaper-o','almira@directactioneverywhere.com','2020-09-26 05:13:03',1,1),
+	(4,'vehicula condimentum curabitur','In blandit ultrices enim.','exclamation-triangle','cassie@directactioneverywhere.com','2020-11-14 07:05:22',1,1),
+	(5,'at turpis donec','Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam. Nam tristique tortor eu pede.','bus','almira@directactioneverywhere.com','2020-06-24 03:59:49',1,1),
+	(6,'turpis','In hac habitasse platea dictumst.','exclamation-triangle','cassie@directactioneverywhere.com','2020-09-24 05:00:28',1,1),
+	(7,'semper','In hac habitasse platea dictumst.','newspaper-o','almira@directactioneverywhere.com','2020-12-31 01:11:01',1,1),
+	(8,'interdum venenatis','Morbi sem mauris, laoreet ut, rhoncus aliquet, pulvinar sed, nisl.','newspaper-o','cassie@directactioneverywhere.com','2020-09-15 09:45:15',1,1),
+	(9,'at','Pellentesque viverra pede ac diam. Cras pellentesque volutpat dui.','cloud','almira@directactioneverywhere.com','2020-07-23 17:24:54',1,1),
+	(10,'eu','Donec ut mauris eget massa tempor convallis. Sa neque libero, convallis eget, eleifend luctus, ultricies eu, nibh. Quisque id justo sit amet sapien dignissim vestibulum.','newspaper-o','cassie@directactioneverywhere.com','2021-03-15 06:45:41',1,1),
+	(11,'Sa','In quis justo. Maecenas rhoncus aliquam lacus. Morbi quis tortor id Sa ultrices aliquet. Maecenas leo odio, condimentum id, luctus nec, molestie sed, justo.','cloud','almira@directactioneverywhere.com','2020-06-28 14:28:46',0,1),
+	(12,'dui luctus','Sa tellus. In sagittis dui vel nisl. Duis ac nibh. Fusce lacus purus, aliquet at, feugiat non, pretium quis, lectus.','newspaper-o','cassie@directactioneverywhere.com','2021-03-25 21:14:40',0,1),
+	(13,'dolor','In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.','bus','almira@directactioneverywhere.com','2020-06-16 11:43:15',0,1),
+	(14,'platea','Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo.','newspaper-o','cassie@directactioneverywhere.com','2020-06-29 20:29:27',0,1),
+	(15,'eleifend pede','Pellentesque ultrices mattis odio.','newspaper-o','almira@directactioneverywhere.com','2020-08-27 16:10:39',0,1)
+`)
+
+	db.MustExec(`
+INSERT INTO conferences (id, name, start_date, end_date)
+VALUES
+	(1,'Animal Liberation Conference 2021','2021-09-24 00:00:00','2021-09-30 11:59:59')
+`)
+
+	db.MustExec(`
+INSERT INTO events (id, name, description, start_time, length, location_id, image_id, key_event, conference_id)
+VALUES
+	(1,'Registration','Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.\n\nCum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.','2021-09-24 17:00:01',1.00,1,NULL,0,1),
+	(2,'Event 2','Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.\n\nCurabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.','2021-09-24 18:00:01',1.50,2,NULL,0,1),
+	(3,'Event 11','Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.\n\nCurabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.','2021-09-24 18:00:01',1.00,1,NULL,1,1),
+	(4,'Event 3','Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Proin risus. Praesent lectus.\n\nVestibulum quam sapien, varius ut, blandit non, interdum in, ante. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Duis faucibus accumsan odio. Curabitur convallis.','2021-09-24 20:00:01',1.00,2,NULL,0,1),
+	(5,'Event 4','Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.','2021-09-24 23:00:01',1.25,3,NULL,1,1),
+	(6,'Event 5','Proin interdum mauris non ligula pellentesque ultrices. Phasellus id sapien in sapien iaculis congue. Vivamus metus arcu, adipiscing molestie, hendrerit at, vulputate vitae, nisl.\n\nAenean lectus. Pellentesque eget nunc. Donec quis orci eget orci vehicula condimentum.\n\nCurabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo. Maecenas pulvinar lobortis est.','2021-09-25 01:30:01',1.50,1,NULL,0,1),
+	(7,'Event 6','Sed sagittis. Nam congue, risus semper porta volutpat, quam pede lobortis ligula, sit amet eleifend pede libero quis orci. Nullam molestie nibh in lectus.','2021-09-25 17:00:01',1.00,1,NULL,0,1),
+	(8,'Event 7','Vestibulum ac est lacinia nisi venenatis tristique. Fusce congue, diam id ornare imperdiet, sapien urna pretium nisl, ut volutpat sapien arcu sed augue. Aliquam erat volutpat.\n\nIn congue. Etiam justo. Etiam pretium iaculis justo.','2021-09-25 18:00:01',2.00,1,NULL,0,1),
+	(9,'Event 8','Phasellus sit amet erat. Nulla tempus. Vivamus in felis eu sapien cursus vestibulum.','2021-09-25 20:00:01',1.00,1,NULL,1,1),
+	(10,'Event 9','Suspendisse potenti. In eleifend quam a odio. In hac habitasse platea dictumst.','2021-09-25 23:00:01',3.00,1,NULL,0,1),
+	(11,'Event 10','Fusce consequat. Nulla nisl. Nunc nisl.\n\nDuis bibendum, felis sed interdum venenatis, turpis enim blandit mi, in porttitor pede justo eu massa. Donec dapibus. Duis at velit eu est congue elementum.','2021-09-26 01:30:01',0.75,1,NULL,1,1)
+`)
+
+	db.MustExec(`
+INSERT INTO info (id, title, subtitle, content, icon)
+VALUES
+	(1,'FAQ','Get answers to commonly asked questions.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','question'),
+	(2,'Community Agreements','Help us maintain a safe and empowering space.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','handshake-o'),
+	(3,'Contact Us','Reach the organizers if you have any questions or concerns.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','envelope-o'),
+	(4,'Chants & Lyrics',"Unsure of what's being said or sang? Follow along here.",'<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','microphone')
+`)
+
+	db.MustExec(`
+INSERT INTO locations (id, name, place_id, address, city, lat, lng)
+VALUES
+	(1,'Anna Head Almunae Hall','ChIJq6o6Q8mAj4ARsF7I2SLSZC4','252 2nd St','Oakland',37.794594,-122.271889),
+	(2,'The Flying Falafel','ChIJvWI2gp5-hYARbzMnkKTNAng','2114 Shattuck Ave','Berkeley',37.874767,-122.268295),
+	(3,'BLOC15','ChIJq6o6Q8mAj4ARsF7I2SLSZC6','254 2nd St','Oakland',37.794594,-122.271889)
 `)
 
 }
