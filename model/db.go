@@ -33,21 +33,8 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(200) NOT NULL DEFAULT '',
     device_id VARCHAR(200),
     device_name VARCHAR(200),
-    platform VARCHAR(60)
-)
-`)
-
-	db.MustExec(`
-CREATE TABLE IF NOT EXISTS events (
-	id INTEGER PRIMARY KEY AUTO_INCREMENT,
-	conference_id INTEGER,
-	name VARCHAR(200),
-    description TEXT,
-    start_time DATETIME NOT NULL,
-    length FLOAT(3,2) NOT NULL,
-    location_id INTEGER,
-    image_id INTEGER,
-    key_event TINYINT NOT NULL DEFAULT '0'
+    platform VARCHAR(60),
+    FOREIGN KEY (conference_id) REFERENCES conferences(id)
 )
 `)
 
@@ -64,18 +51,37 @@ CREATE TABLE IF NOT EXISTS locations (
 `)
 
 	db.MustExec(`
-CREATE TABLE IF NOT EXISTS rsvp (
-	event_id INTEGER NOT NULL,
-	user_id INTEGER NOT NULL,
-	attending TINYINT NOT NULL DEFAULT '0',
-    PRIMARY KEY (event_id, user_id)
+CREATE TABLE IF NOT EXISTS images (
+	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+	url VARCHAR(400) NOT NULL
 )
 `)
 
 	db.MustExec(`
-CREATE TABLE IF NOT EXISTS images (
+CREATE TABLE IF NOT EXISTS events (
 	id INTEGER PRIMARY KEY AUTO_INCREMENT,
-	url VARCHAR(400) NOT NULL
+	conference_id INTEGER,
+	name VARCHAR(200),
+    description TEXT,
+    start_time DATETIME NOT NULL,
+    length FLOAT(3,2) NOT NULL,
+    location_id INTEGER,
+    image_id INTEGER,
+    key_event TINYINT NOT NULL DEFAULT '0',
+    FOREIGN KEY (conference_id) REFERENCES conferences(id),
+    FOREIGN KEY (location_id) REFERENCES locations(id),
+    FOREIGN KEY (image_id) REFERENCES images(id)
+)
+`)
+
+	db.MustExec(`
+CREATE TABLE IF NOT EXISTS rsvp (
+	event_id INTEGER NOT NULL,
+	user_id INTEGER NOT NULL,
+	attending TINYINT NOT NULL DEFAULT '0',
+    PRIMARY KEY (event_id, user_id),
+    FOREIGN KEY (event_id) REFERENCES events(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 )
 `)
 
@@ -98,7 +104,8 @@ CREATE TABLE IF NOT EXISTS announcements (
     icon VARCHAR(30) NOT NULL,
     created_by VARCHAR(100) NOT NULL,
     send_time DATETIME,
-    sent TINYINT NOT NULL DEFAULT '0'
+    sent TINYINT NOT NULL DEFAULT '0',
+    FOREIGN KEY (conference_id) REFERENCES conferences(id)
 )
 `)
 
@@ -109,17 +116,31 @@ CREATE TABLE IF NOT EXISTS announcements (
 // on the actual dev or prod database.
 func WipeDatabase(db *sqlx.DB) {
 	// TODO(jhobbs): Return an error if prod.
-	db.MustExec(`DROP TABLE IF EXISTS conferences`)
+	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
 	db.MustExec(`DROP TABLE IF EXISTS users`)
 	db.MustExec(`DROP TABLE IF EXISTS events`)
-	db.MustExec(`DROP TABLE IF EXISTS locations`)
-	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
 	db.MustExec(`DROP TABLE IF EXISTS images`)
+	db.MustExec(`DROP TABLE IF EXISTS locations`)
 	db.MustExec(`DROP TABLE IF EXISTS info`)
 	db.MustExec(`DROP TABLE IF EXISTS announcements`)
+	db.MustExec(`DROP TABLE IF EXISTS conferences`)
 }
 
 func InsertMockData(db *sqlx.DB) {
+	db.MustExec(`
+INSERT INTO conferences (id, name, start_date, end_date)
+VALUES
+	(1,'Animal Liberation Conference 2021','2021-09-24 00:00:00','2021-09-30 11:59:59')
+`)
+
+	db.MustExec(`
+INSERT INTO locations (id, name, place_id, address, city, lat, lng)
+VALUES
+	(1,'Anna Head Almunae Hall','ChIJq6o6Q8mAj4ARsF7I2SLSZC4','252 2nd St','Oakland',37.794594,-122.271889),
+	(2,'The Flying Falafel','ChIJvWI2gp5-hYARbzMnkKTNAng','2114 Shattuck Ave','Berkeley',37.874767,-122.268295),
+	(3,'BLOC15','ChIJq6o6Q8mAj4ARsF7I2SLSZC6','254 2nd St','Oakland',37.794594,-122.271889)
+`)
+
 	db.MustExec(`
 INSERT INTO announcements (id, title, message, icon, created_by, send_time, sent, conference_id)
 VALUES
@@ -138,12 +159,6 @@ VALUES
 	(13,'dolor','In hac habitasse platea dictumst. Morbi vestibulum, velit id pretium iaculis, diam erat fermentum justo, nec condimentum neque sapien placerat ante.','bus','almira@directactioneverywhere.com','2020-06-16 11:43:15',0,1),
 	(14,'platea','Donec quis orci eget orci vehicula condimentum. Curabitur in libero ut massa volutpat convallis. Morbi odio odio, elementum eu, interdum eu, tincidunt in, leo.','newspaper-o','cassie@directactioneverywhere.com','2020-06-29 20:29:27',0,1),
 	(15,'eleifend pede','Pellentesque ultrices mattis odio.','newspaper-o','almira@directactioneverywhere.com','2020-08-27 16:10:39',0,1)
-`)
-
-	db.MustExec(`
-INSERT INTO conferences (id, name, start_date, end_date)
-VALUES
-	(1,'Animal Liberation Conference 2021','2021-09-24 00:00:00','2021-09-30 11:59:59')
 `)
 
 	db.MustExec(`
@@ -169,14 +184,6 @@ VALUES
 	(2,'Community Agreements','Help us maintain a safe and empowering space.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','handshake-o'),
 	(3,'Contact Us','Reach the organizers if you have any questions or concerns.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','envelope-o'),
 	(4,'Chants & Lyrics',"Unsure of what's being said or sang? Follow along here.",'<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','microphone')
-`)
-
-	db.MustExec(`
-INSERT INTO locations (id, name, place_id, address, city, lat, lng)
-VALUES
-	(1,'Anna Head Almunae Hall','ChIJq6o6Q8mAj4ARsF7I2SLSZC4','252 2nd St','Oakland',37.794594,-122.271889),
-	(2,'The Flying Falafel','ChIJvWI2gp5-hYARbzMnkKTNAng','2114 Shattuck Ave','Berkeley',37.874767,-122.268295),
-	(3,'BLOC15','ChIJq6o6Q8mAj4ARsF7I2SLSZC6','254 2nd St','Oakland',37.794594,-122.271889)
 `)
 
 }
