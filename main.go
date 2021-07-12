@@ -56,7 +56,7 @@ func main() {
 	if !*flagProd {
 		model.WipeDatabase(db, *flagProd)
 		model.InitDatabase(db)
-		model.InsertMockData(db)
+		model.InsertMockData(db, *flagProd)
 	}
 
 	clientID := config("OAUTH_CLIENT_ID")

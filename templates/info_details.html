@@ -32,9 +32,12 @@
         <div class="field">
           <label class="label">Content</label>
           <div class="control">
-            <textarea class="textarea" name="Content" rows="4" required>{{.PageData.Content}}</textarea>
+<!--            <textarea class="textarea" name="Content" rows="4" required>{{.PageData.Content}}</textarea>-->
+            <input id="content" type="hidden" name="Content" value="{{.PageData.Content}}">
+            <trix-editor input="content"></trix-editor>
           </div>
         </div>
+
 
 <!--        TODO: show a dropdown select for icon choices-->
         <div class="field">

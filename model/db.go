@@ -127,7 +127,11 @@ func WipeDatabase(db *sqlx.DB, flagProd bool) {
 	db.MustExec(`DROP TABLE IF EXISTS conferences`)
 }
 
-func InsertMockData(db *sqlx.DB) {
+func InsertMockData(db *sqlx.DB, flagProd bool) {
+	if flagProd {
+		log.Fatalln("Cannot insert mock data into db in prod! Exiting!")
+	}
+
 	db.MustExec(`
 INSERT INTO conferences (id, name, start_date, end_date)
 VALUES
