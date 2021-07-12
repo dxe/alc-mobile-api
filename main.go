@@ -97,34 +97,48 @@ func main() {
 		})
 	}
 
-	// Admin pages
+	// Index & auth pages
 	handleAuth("/", (*server).index)
 	handle("/login", (*server).login)
 	handle("/logout", (*server).logout)
 	handle("/auth", (*server).auth)
 	handleAuth("/admin", (*server).admin)
+
+	// Admin conference pages
 	handleAuth("/admin/conferences", (*server).adminConferences)
 	handleAuth("/admin/conference/details", (*server).adminConferenceDetails)
 	handleAuth("/admin/conference/save", (*server).adminConferenceSave)
 	handleAuth("/admin/conference/delete", (*server).adminConferenceDelete)
-	handleAuth("/admin/locations", (*server).adminLocations)
-	handleAuth("/admin/locations/edit", (*server).adminLocations)
-	handleAuth("/admin/locations/update", (*server).adminLocations)
-	handleAuth("/admin/locations/delete", (*server).adminLocations)
-	handleAuth("/admin/events", (*server).adminEvents)
-	handleAuth("/admin/events/edit", (*server).adminEvents)
-	handleAuth("/admin/events/update", (*server).adminEvents)
-	handleAuth("/admin/events/delete", (*server).adminEvents)
-	handleAuth("/admin/info", (*server).adminInfo)
-	handleAuth("/admin/info/edit", (*server).adminInfo)
-	handleAuth("/admin/info/update", (*server).adminInfo)
-	handleAuth("/admin/info/delete", (*server).adminInfo)
-	handleAuth("/admin/announcements", (*server).adminAnnouncements)
-	handleAuth("/admin/announcements/edit", (*server).adminAnnouncements)
-	handleAuth("/admin/announcements/update", (*server).adminAnnouncements)
-	handleAuth("/admin/announcements/delete", (*server).adminAnnouncements)
 
-	// Healthcheck page for load balancer
+	// Admin location pages
+	handleAuth("/admin/locations", (*server).adminLocations)
+	// TODO: Implement these handlers.
+	//handleAuth("/admin/location/details", (*server).adminLocationDetails)
+	//handleAuth("/admin/location/save", (*server).adminLocationSave)
+	//handleAuth("/admin/location/delete", (*server).adminLocationDelete)
+
+	// Admin event pages
+	handleAuth("/admin/events", (*server).adminEvents)
+	// TODO: Implement these handlers.
+	//handleAuth("/admin/event/details", (*server).adminEventDetails)
+	//handleAuth("/admin/event/save", (*server).adminEventSave)
+	//handleAuth("/admin/event/delete", (*server).adminEventDelete)
+
+	// Admin info pages
+	handleAuth("/admin/info", (*server).adminInfo)
+	// TODO: Implement these handlers.
+	//handleAuth("/admin/info/details", (*server).adminInfoDetails)
+	//handleAuth("/admin/info/save", (*server).adminInfoSave)
+	//handleAuth("/admin/info/delete", (*server).adminInfoDelete)
+
+	// Admin announcement pages
+	handleAuth("/admin/announcements", (*server).adminAnnouncements)
+	// TODO: Implement these handlers.
+	//handleAuth("/admin/announcement/details", (*server).adminAnnouncementDetails)
+	//handleAuth("/admin/announcement/save", (*server).adminAnnouncementSave)
+	//handleAuth("/admin/announcement/delete", (*server).adminAnnouncementDelete)
+
+	// Healthcheck for load balancer
 	handle("/healthcheck", (*server).health)
 
 	// Unauthed API
@@ -133,6 +147,7 @@ func main() {
 	handle("/announcement/list", (*server).listAnnouncements)
 	handle("/event/list", (*server).listEvents)
 
+	// Static file server
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	log.Println("Server started. Listening on port 8080.")
@@ -303,7 +318,7 @@ func (s *server) listInfo() {
 }
 
 func (s *server) listAnnouncements() {
-	// TODO: pass in the conference id as a parameter
+	// TODO(jhobbs): pass in the conference id as a parameter
 	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
 		IncludeScheduled: false,
 		ConferenceID:     1,
@@ -311,7 +326,7 @@ func (s *server) listAnnouncements() {
 }
 
 func (s *server) listEvents() {
-	// TODO: pass in the conference id as a parameter
+	// TODO(jhobbs): pass in the conference id as a parameter
 	s.serveJSON(model.ListEvents(s.db, model.EventOptions{
 		ConferenceID: 1,
 	}))
