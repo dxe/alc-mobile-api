@@ -412,7 +412,7 @@ func (s *server) adminEventSave() {
 		keyEvent = true
 	}
 
-	length, err := strconv.ParseFloat(s.r.Form.Get("Length"), 64)
+	length, err := strconv.Atoi(s.r.Form.Get("Length"))
 	if err != nil {
 		s.adminError(err)
 		return

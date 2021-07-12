@@ -1,0 +1,27 @@
+<div class="trix-button-row">
+  <span class="trix-button-group trix-button-group--text-tools" data-trix-button-group="text-tools">
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-bold" data-trix-attribute="bold" data-trix-key="b" title="Bold" tabindex="-1">Bold</button>
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-italic" data-trix-attribute="italic" data-trix-key="i" title="Italic" tabindex="-1">Italic</button>
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-link" data-trix-attribute="href" data-trix-action="link" data-trix-key="k" title="Link" tabindex="-1">Link</button>
+  </span>
+  <span class="trix-button-group trix-button-group--block-tools" data-trix-button-group="block-tools">
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-bullet-list" data-trix-attribute="bullet" title="Bulleted List" tabindex="-1">Bulleted List</button>
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-number-list" data-trix-attribute="number" title="#Numbered List" tabindex="-1">Numbered List</button>
+  </span>
+  <span class="trix-button-group-spacer"></span>
+  <span class="trix-button-group trix-button-group--history-tools" data-trix-button-group="history-tools">
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-undo" data-trix-action="undo" data-trix-key="z" title="Undo" tabindex="-1">Undo</button>
+    <button type="button" class="trix-button trix-button--icon trix-button--icon-redo" data-trix-action="redo" data-trix-key="shift+z" title="Redo" tabindex="-1">Redo</button>
+  </span>
+</div>
+<div class="trix-dialogs" data-trix-dialogs>
+  <div class="trix-dialog trix-dialog--link" data-trix-dialog="href" data-trix-dialog-attribute="href">
+    <div class="trix-dialog__link-fields">
+      <input type="url" name="href" class="trix-input trix-input--dialog" placeholder="Enter URL" aria-label="#{lang.url}" required data-trix-input>
+      <div class="trix-button-group">
+        <input type="button" class="trix-button trix-button--dialog" value="Add link" data-trix-method="setAttribute">
+        <input type="button" class="trix-button trix-button--dialog" value="Remove link" data-trix-method="removeAttribute">
+      </div>
+    </div>
+  </div>
+</div>

@@ -130,7 +130,7 @@ func (s *server) auth() {
 	http.SetCookie(s.w, &http.Cookie{
 		Name:     cookieIDToken,
 		Value:    idToken,
-		MaxAge:   3600,
+		MaxAge:   36000,
 		SameSite: http.SameSiteLaxMode,
 		HttpOnly: true,
 	})

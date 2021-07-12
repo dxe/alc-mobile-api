@@ -14,7 +14,7 @@ type Event struct {
 	Name          string        `db:"name" json:"name"`
 	Description   string        `db:"description" json:"description"`
 	StartTime     string        `db:"start_time" json:"start_time"`
-	Length        float64       `db:"length" json:"length"`
+	Length        int           `db:"length" json:"length"`
 	KeyEvent      bool          `db:"key_event" json:"key_event"`
 	AttendeeCount int           `db:"attendee_count" json:"attendee_count"` // TODO(jhobbs): Get this data from database.
 	LocationID    int           `db:"location_id" json:"location_id"`       // TODO(jhobbs): Maybe we should just stick the Location here?
