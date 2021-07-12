@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/dxe/alc-mobile-api/model"
@@ -103,10 +104,25 @@ func main() {
 	handle("/auth", (*server).auth)
 	handleAuth("/admin", (*server).admin)
 	handleAuth("/admin/conferences", (*server).adminConferences)
+	handleAuth("/admin/conference/details", (*server).adminConferenceDetails)
+	handleAuth("/admin/conference/save", (*server).adminConferenceSave)
+	handleAuth("/admin/conference/delete", (*server).adminConferenceDelete)
 	handleAuth("/admin/locations", (*server).adminLocations)
+	handleAuth("/admin/locations/edit", (*server).adminLocations)
+	handleAuth("/admin/locations/update", (*server).adminLocations)
+	handleAuth("/admin/locations/delete", (*server).adminLocations)
 	handleAuth("/admin/events", (*server).adminEvents)
+	handleAuth("/admin/events/edit", (*server).adminEvents)
+	handleAuth("/admin/events/update", (*server).adminEvents)
+	handleAuth("/admin/events/delete", (*server).adminEvents)
 	handleAuth("/admin/info", (*server).adminInfo)
+	handleAuth("/admin/info/edit", (*server).adminInfo)
+	handleAuth("/admin/info/update", (*server).adminInfo)
+	handleAuth("/admin/info/delete", (*server).adminInfo)
 	handleAuth("/admin/announcements", (*server).adminAnnouncements)
+	handleAuth("/admin/announcements/edit", (*server).adminAnnouncements)
+	handleAuth("/admin/announcements/update", (*server).adminAnnouncements)
+	handleAuth("/admin/announcements/delete", (*server).adminAnnouncements)
 
 	// Healthcheck page for load balancer
 	handle("/healthcheck", (*server).health)
@@ -184,6 +200,60 @@ func (s *server) adminConferences() {
 	s.renderTemplate("conferences", conferenceData)
 }
 
+func (s *server) adminConferenceDetails() {
+	id := s.r.URL.Query().Get("id")
+	if id == "" {
+		// Form to create a new conference
+		s.renderTemplate("conference_details", model.Conference{})
+		return
+	}
+	// Form to update an existing conference
+	conference, err := model.GetConferenceByID(s.db, id)
+	if err != nil {
+		s.adminError(err)
+		return
+	}
+	log.Println(conference)
+	s.renderTemplate("conference_details", conference)
+}
+
+func (s *server) adminConferenceSave() {
+	if err := s.r.ParseForm(); err != nil {
+		s.adminError(err)
+		return
+	}
+
+	id, err := strconv.Atoi(s.r.Form.Get("ID"))
+	if err != nil {
+		s.adminError(err)
+		return
+	}
+	// TODO: validate that start & end time format before attempting to save
+	// and provide a more clear error message for users?
+
+	conference := model.Conference{
+		ID:        id,
+		Name:      s.r.Form.Get("Name"),
+		StartDate: s.r.Form.Get("StartTime"),
+		EndDate:   s.r.Form.Get("EndTime"),
+	}
+	// update the database
+	if err := model.SaveConference(s.db, conference); err != nil {
+		s.adminError(err)
+		return
+	}
+	s.redirect("/admin/conferences")
+}
+
+func (s *server) adminConferenceDelete() {
+	id := s.r.URL.Query().Get("id")
+	if err := model.DeleteConference(s.db, id); err != nil {
+		s.adminError(err)
+		return
+	}
+	s.redirect("/admin/conferences")
+}
+
 func (s *server) adminLocations() {
 	locationData, err := model.ListLocations(s.db)
 	// TODO(jhobbs): Consider not returning an error if no locations are found to make this more simple.
@@ -218,6 +288,10 @@ func (s *server) adminAnnouncements() {
 		panic(err)
 	}
 	s.renderTemplate("announcements", announcementData)
+}
+
+func (s *server) adminError(err error) {
+	s.renderTemplate("error", err.Error())
 }
 
 func (s *server) listConferences() {

@@ -1,0 +1,17 @@
+{{template "header.html" .}}
+
+<section class="section">
+  <div class="container">
+    <article class="message is-danger">
+      <div class="message-header">
+        <p>Error</p>
+      </div>
+      <div class="message-body">
+        {{.PageData}}
+      </div>
+    </article>
+    <p><strong>Need help?</strong> Email <a href="mailto:tech@dxe.io">tech@dxe.io</a>. Please copy and paste the full error text from above into your message. Also include a detailed description of what you were trying to do at the time of the error.</p>
+  </div>
+</section>
+
+{{template "footer.html" .}}

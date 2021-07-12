@@ -1,0 +1,52 @@
+{{template "header.html" .}}
+
+<section class="section">
+  <div class="container">
+<!--    TODO: say "new" or "edit" depending on what is happening-->
+    <h1 class="title">{{if eq .PageData.ID 0}}New{{else}}Edit{{end}} Conference</h1>
+
+      <form action="/admin/conference/save" method="post">
+
+        <div class="field" hidden>
+          <label class="label">ID</label>
+          <div class="control">
+            <input class="input" type="number" name="ID" value="{{.PageData.ID}}" readonly>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
+            <input class="input" type="text" name="Name" value="{{.PageData.Name}}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Start Date (YYYY-MM-DD)</label>
+          <div class="control">
+            <input class="input" type="date" name="StartTime" value="{{.PageData.StartDate}}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">End Date (YYYY-MM-DD)</label>
+          <div class="control">
+            <input class="input" type="date" name="EndTime" value="{{.PageData.EndDate}}">
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button type="submit" class="button is-link">Submit</button>
+          </div>
+          <div class="control">
+              <a href="/admin/conferences" class="button is-link is-light">Cancel</a>
+          </div>
+        </div>
+
+    </form>
+
+  </div>
+</section>
+
+{{template "footer.html" .}}
