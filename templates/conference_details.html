@@ -2,7 +2,6 @@
 
 <section class="section">
   <div class="container">
-<!--    TODO: say "new" or "edit" depending on what is happening-->
     <h1 class="title">{{if eq .PageData.ID 0}}New{{else}}Edit{{end}} Conference</h1>
 
       <form action="/admin/conference/save" method="post">
@@ -17,21 +16,21 @@
         <div class="field">
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" name="Name" value="{{.PageData.Name}}">
+            <input class="input" type="text" name="Name" value="{{.PageData.Name}}" required>
           </div>
         </div>
 
         <div class="field">
-          <label class="label">Start Date (YYYY-MM-DD)</label>
+          <label class="label">Start Time</label>
           <div class="control">
-            <input class="input" type="date" name="StartTime" value="{{.PageData.StartDate}}">
+            <input class="input" type="date" name="StartDate" value="{{.PageData.StartDate}}" required>
           </div>
         </div>
 
         <div class="field">
-          <label class="label">End Date (YYYY-MM-DD)</label>
+          <label class="label">End Time</label>
           <div class="control">
-            <input class="input" type="date" name="EndTime" value="{{.PageData.EndDate}}">
+            <input class="input" type="date" name="EndDate" value="{{.PageData.EndDate}}" required>
           </div>
         </div>
 

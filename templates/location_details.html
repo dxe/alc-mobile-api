@@ -1,0 +1,93 @@
+{{template "header.html" .}}
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">{{if eq .PageData.ID 0}}New{{else}}Edit{{end}} Location</h1>
+
+      <form action="/admin/location/save" method="post">
+
+        <div class="field" hidden>
+          <label class="label">ID</label>
+          <div class="control">
+            <input class="input" type="number" name="ID" value="{{.PageData.ID}}" readonly>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
+            <input class="input" type="text" name="Name" value="{{.PageData.Name}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">
+            Place ID
+            <span style="font-weight: normal">
+              (Can be found <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank">here</a>.)
+            </span>
+          </label>
+          <div class="control">
+            <input class="input" type="text" name="PlaceID" value="{{.PageData.PlaceID}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Address</label>
+          <div class="control">
+            <input class="input" type="text" name="Address" value="{{.PageData.Address}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">City</label>
+          <div class="control">
+            <input class="input" type="text" name="City" value="{{.PageData.City}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Lat</label>
+          <div class="control">
+            <input class="input"
+                   type="number"
+                   name="Lat"
+                   placeholder="000.000000"
+                   step="0.000001"
+                   min="-180"
+                   max="180"
+                   value="{{.PageData.Lat}}"
+                   required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Lng</label>
+          <div class="control">
+            <input class="input"
+                   type="number"
+                   name="Lng"
+                   placeholder="000.000000"
+                   step="0.000001"
+                   min="-90"
+                   max="90"
+                   value="{{.PageData.Lng}}"
+                   required>
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button type="submit" class="button is-link">Submit</button>
+          </div>
+          <div class="control">
+              <a href="/admin/locations" class="button is-link is-light">Cancel</a>
+          </div>
+        </div>
+
+    </form>
+
+  </div>
+</section>
+
+{{template "footer.html" .}}

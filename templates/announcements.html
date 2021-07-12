@@ -3,14 +3,15 @@
 <section class="section">
   <div class="container">
     <h1 class="title">Announcements</h1>
+    <a class="button is-link block" href="/admin/announcement/details">+ Add New Announcement</a>
     <div class="b-table">
       <div class="table-wrapper has-mobile-cards">
         <table class="table is-fullwidth is-striped is-hoverable is-fullwidth">
           <thead>
           <tr>
             <th>Title</th>
-            <th>Created By</th>
-            <th>Send Time</th>
+            <th>Send Time (US Pacific)</th>
+            <th>Last Modified By</th>
             <th>Sent</th>
             <th></th>
           </tr>
@@ -20,17 +21,17 @@
           {{range .PageData}}
           <tr>
             <td data-label="Title">{{.Title}}</td>
-            <td data-label="Created By">{{emailToName .CreatedBy}}</td>
-            <td data-label="Send Time">{{.SendTime}}</td>
-            <td data-label="Sent">{{.Sent}}</td>
+            <td data-label="Send Time (PT)">{{.SendTime}}</td>
+            <td data-label="Last Modified By">{{emailToName .CreatedBy}}</td>
+            <td data-label="Sent" class="has-text-success">{{if .Sent}}✓{{end}}</td>
             <td class="is-actions-cell">
               <div class="buttons is-right">
-                <button class="button is-small is-primary" type="button">
+                <a class="button is-small is-primary" href="/admin/announcement/details?id={{.ID}}">
                   Edit
-                </button>
-                <button class="button is-small is-danger jb-modal" data-target="sample-modal" type="button">
+                </a>
+                <a class="button is-small is-danger jb-modal" href="/admin/announcement/delete?id={{.ID}}">
                   Delete
-                </button>
+                </a>
               </div>
             </td>
           </tr>

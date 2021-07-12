@@ -3,24 +3,26 @@ package model
 import (
 	"errors"
 	"fmt"
-	"time"
+	"log"
 
 	"github.com/jmoiron/sqlx"
 )
 
 type Announcement struct {
-	ID        int       `db:"id" json:"id"`
-	Title     string    `db:"title" json:"title"`
-	Message   string    `db:"message" json:"message"`
-	Icon      string    `db:"icon" json:"icon"`
-	CreatedBy string    `db:"created_by" json:"created_by"`
-	SendTime  time.Time `db:"send_time" json:"send_time"`
-	Sent      bool      `db:"sent" json:"sent"`
+	ID           int    `db:"id" json:"id"`
+	ConferenceID int    `db:"conference_id" json:"conference_id"`
+	Title        string `db:"title" json:"title"`
+	Message      string `db:"message" json:"message"`
+	Icon         string `db:"icon" json:"icon"`
+	CreatedBy    string `db:"created_by" json:"created_by"`
+	SendTime     string `db:"send_time" json:"send_time"`
+	Sent         bool   `db:"sent" json:"sent"`
 }
 
 type AnnouncementOptions struct {
-	IncludeScheduled bool
-	ConferenceID     int
+	IncludeScheduled       bool
+	ConferenceID           int
+	ConvertTimeToUSPacific bool
 }
 
 func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement, error) {
@@ -28,9 +30,18 @@ func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement
 		return nil, errors.New("must provide conference id")
 	}
 
+	timeQuery := "send_time"
+	if options.ConvertTimeToUSPacific {
+		timeQuery = `DATE_FORMAT(CONVERT_TZ(send_time, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as send_time`
+	}
+
 	query := `
-SELECT id, title, message, icon, created_by, send_time, sent FROM announcements WHERE conference_id = ?
-ORDER BY send_time asc
+SELECT id, conference_id, title, message, icon, created_by,
+       ` + timeQuery + `,
+       sent
+FROM announcements
+WHERE conference_id = ?
+ORDER BY announcements.send_time asc
 `
 	if !options.IncludeScheduled {
 		query += " AND sent = 1"
@@ -40,7 +51,69 @@ ORDER BY send_time asc
 		return announcements, fmt.Errorf("failed to list announcements: %w", err)
 	}
 	if announcements == nil {
-		return nil, errors.New("no announcements found")
+		announcements = make([]Announcement, 0)
 	}
 	return announcements, nil
+}
+
+func GetAnnouncementByID(db *sqlx.DB, id string) (Announcement, error) {
+	const query = `
+SELECT id, conference_id, title, message, icon, created_by, send_time, sent
+FROM announcements
+WHERE id = ?
+`
+	var announcements []Announcement
+	if err := db.Select(&announcements, query, id); err != nil {
+		return Announcement{}, fmt.Errorf("failed to select announcement: %w", err)
+	}
+	if len(announcements) == 0 {
+		return Announcement{}, errors.New("found no announcements with given id")
+	}
+	return announcements[0], nil
+}
+
+func SaveAnnouncement(db *sqlx.DB, announcement Announcement) error {
+	if announcement.ID == 0 {
+		return insertAnnouncement(db, announcement)
+	}
+	return updateAnnouncement(db, announcement)
+}
+
+func insertAnnouncement(db *sqlx.DB, announcement Announcement) error {
+	log.Println("inserting!")
+	query := `
+INSERT INTO announcements (conference_id, title, message, icon, created_by, send_time)
+VALUES (:conference_id, :title, :message, :icon, :created_by, :send_time)
+`
+	if _, err := db.NamedExec(query, announcement); err != nil {
+		return fmt.Errorf("failed to insert announcement: %w", err)
+	}
+	return nil
+}
+
+func updateAnnouncement(db *sqlx.DB, announcement Announcement) error {
+	query := `
+UPDATE announcements
+SET conference_id = :conference_id, title = :title, message = :message, icon = :icon, created_by = :created_by, send_time = :send_time
+WHERE id = :id
+`
+	if _, err := db.NamedExec(query, announcement); err != nil {
+		return fmt.Errorf("failed to update announcement: %w", err)
+	}
+	return nil
+}
+
+func DeleteAnnouncement(db *sqlx.DB, id string) error {
+	if id == "" {
+		return errors.New("announcement id must be provided")
+	}
+	const query = "DELETE FROM announcements WHERE id = ?"
+	res, err := db.Exec(query, id)
+	if err != nil {
+		return fmt.Errorf("failed to delete announcement: %w", err)
+	}
+	if rows, _ := res.RowsAffected(); rows == 0 {
+		return fmt.Errorf("failed to delete announcement: no rows affected")
+	}
+	return nil
 }

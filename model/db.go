@@ -91,7 +91,8 @@ CREATE TABLE IF NOT EXISTS info (
 	title VARCHAR(200) NOT NULL,
     subtitle VARCHAR(200) NOT NULL,
     content TEXT,
-    icon VARCHAR(30)
+    icon VARCHAR(30),
+    display_order INTEGER NOT NULL
 )
 `)
 
@@ -112,10 +113,10 @@ CREATE TABLE IF NOT EXISTS announcements (
 }
 
 // WipeDatabase drops all tables in the database.
-// It may be used for testing purposes, but is not planned to be used
-// on the actual dev or prod database.
-func WipeDatabase(db *sqlx.DB) {
-	// TODO(jhobbs): Return an error if prod.
+func WipeDatabase(db *sqlx.DB, flagProd bool) {
+	if flagProd {
+		log.Fatalln("Cannot wipe database in prod! Exiting!")
+	}
 	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
 	db.MustExec(`DROP TABLE IF EXISTS users`)
 	db.MustExec(`DROP TABLE IF EXISTS events`)
@@ -178,12 +179,12 @@ VALUES
 `)
 
 	db.MustExec(`
-INSERT INTO info (id, title, subtitle, content, icon)
+INSERT INTO info (id, title, subtitle, content, icon, display_order)
 VALUES
-	(1,'FAQ','Get answers to commonly asked questions.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','question'),
-	(2,'Community Agreements','Help us maintain a safe and empowering space.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','handshake-o'),
-	(3,'Contact Us','Reach the organizers if you have any questions or concerns.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','envelope-o'),
-	(4,'Chants & Lyrics',"Unsure of what's being said or sang? Follow along here.",'<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','microphone')
+	(1,'FAQ','Get answers to commonly asked questions.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','question',1),
+	(2,'Community Agreements','Help us maintain a safe and empowering space.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','handshake-o',2),
+	(3,'Contact Us','Reach the organizers if you have any questions or concerns.','<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','envelope-o',3),
+	(4,'Chants & Lyrics',"Unsure of what's being said or sang? Follow along here.",'<p><strong>Title</strong><br/>Text</p><p><strong>Title</strong><br/>Text</p>','microphone',4)
 `)
 
 }

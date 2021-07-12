@@ -1,0 +1,98 @@
+{{template "header.html" .}}
+
+<section class="section">
+  <div class="container">
+    <h1 class="title">{{if eq .PageData.ID 0}}New{{else}}Edit{{end}} Event</h1>
+
+      <form action="/admin/event/save" method="post">
+
+        <div class="field" hidden>
+          <label class="label">ID</label>
+          <div class="control">
+            <input class="input" type="number" name="ID" value="{{.PageData.ID}}" readonly>
+          </div>
+        </div>
+
+        <!--      TODO: This should show a select based on conference data in database-->
+        <div class="field">
+          <label class="label">Conference ID</label>
+          <div class="control">
+            <input class="input" type="number" name="ConferenceID" value="1" readonly>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Name</label>
+          <div class="control">
+            <input class="input" type="text" name="Name" value="{{.PageData.Name}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Description</label>
+          <div class="control">
+            <textarea class="textarea" name="Description" rows="4">{{.PageData.Description}}</textarea>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Start Time</label>
+          <div class="control">
+            <input class="input" type="date" name="StartTime" value="{{.PageData.StartTime}}" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label class="label">Length (hours)</label>
+          <div class="control">
+            <input class="input"
+                   type="number"
+                   name="Length"
+                   step="0.25"
+                   min="0.25"
+                   max="12"
+                   value="{{.PageData.Length}}"
+                   required>
+          </div>
+        </div>
+
+<!--        TODO: show a dropdown select that lists available locations instead of asking for an ID-->
+        <div class="field">
+          <label class="label">Location ID</label>
+          <div class="control">
+            <input class="input" type="text" name="LocationID" value="{{.PageData.LocationID}}" required>
+          </div>
+        </div>
+
+<!--        TODO: show a form to upload an image instead of asking for an ID-->
+        <div class="field">
+          <label class="label">Image ID</label>
+          <div class="control">
+            <input class="input" type="text" name="ImageID" value="{{if .PageData.ImageID.Valid}}{{.PageData.ImageID}}{{end}}">
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="control">
+              <label class="checkbox">
+                  <input type="checkbox" name="KeyEvent" {{if .PageData.KeyEvent}}checked{{end}}>
+                  <strong>Key Event</strong> (featured on Home screen of app)
+              </label>
+          </div>
+        </div>
+
+        <div class="field is-grouped">
+          <div class="control">
+            <button type="submit" class="button is-link">Submit</button>
+          </div>
+          <div class="control">
+              <a href="/admin/events" class="button is-link is-light">Cancel</a>
+          </div>
+        </div>
+
+    </form>
+
+  </div>
+</section>
+
+{{template "footer.html" .}}

@@ -23,6 +23,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    const flatpickrOpts = {
+        enableTime: true,
+        dateFormat: "Z",
+        altInput: true,
+        altFormat: "F j, Y h:i K",
+    }
+
+    flatpickr('[type="date"]', flatpickrOpts);
+
 });
 </script>
 
