@@ -79,11 +79,6 @@
 
         <div class="field" id="file-upload">
           <label class="label">Image</label>
-          {{if .PageData.Event.ImageURL.Valid}}
-            <figure class="image is-128x128">
-              <img src="{{.PageData.Event.ImageURL.String}}">
-            </figure>
-          {{end}}
           <div class="file has-name">
             <label class="file-label">
             <input class="file-input" type="file" name="Image">
@@ -97,6 +92,11 @@
               </span>
             </label>
           </div>
+          {{if .PageData.Event.ImageURL.Valid}}
+          <figure class="image is-128x128">
+            <img src="{{.PageData.Event.ImageURL.String}}">
+          </figure>
+          {{end}}
         </div>
 
         <div class="field" hidden>
