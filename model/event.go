@@ -9,16 +9,18 @@ import (
 )
 
 type Event struct {
-	ID            int           `db:"id" json:"id"`
-	ConferenceID  int           `db:"conference_id" json:"conference_id"`
-	Name          string        `db:"name" json:"name"`
-	Description   string        `db:"description" json:"description"`
-	StartTime     string        `db:"start_time" json:"start_time"`
-	Length        int           `db:"length" json:"length"`
-	KeyEvent      bool          `db:"key_event" json:"key_event"`
-	AttendeeCount int           `db:"attendee_count" json:"attendee_count"` // TODO(jhobbs): Get this data from database.
-	LocationID    int           `db:"location_id" json:"location_id"`       // TODO(jhobbs): Maybe we should just stick the Location here?
-	ImageID       sql.NullInt64 `db:"image_id" json:"image_id"`             // TODO(jhobbs): Maybe just use the Image here?
+	ID           int           `db:"id" json:"id"`
+	ConferenceID int           `db:"conference_id" json:"conference_id"`
+	Name         string        `db:"name" json:"name"`
+	Description  string        `db:"description" json:"description"`
+	StartTime    string        `db:"start_time" json:"start_time"`
+	Length       int           `db:"length" json:"length"`
+	KeyEvent     bool          `db:"key_event" json:"key_event"`
+	LocationID   int           `db:"location_id" json:"location_id"`
+	ImageID      sql.NullInt64 `db:"image_id" json:"image_id"`
+	//AttendeeCount int `db:"attendee_count" json:"attendee_count"` // TODO(jhobbs): Get this data from database after we have some RSVP data.
+	//Attendees []string `db:"attendees" json:"attendees"` // TODO(jhobbs): Get this data from the database after we have some RSVP data.
+	//Attending  bool          `db:"attending" json:"attending,omitempty"` // TODO(jhobbs): Get this data from database when listing events w/ RSVP status.
 }
 
 type EventOptions struct {
@@ -36,6 +38,7 @@ func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
 		timeQuery = `DATE_FORMAT(CONVERT_TZ(start_time, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as start_time`
 	}
 
+	// TODO(jhobbs): Join the Location table to provide full Location information.
 	query := `SELECT id, conference_id, name, description, ` + timeQuery + `, length, key_event, location_id, IFNULL(image_id, 0) as image_id
 FROM events WHERE conference_id = ?
 ORDER BY events.start_time asc
