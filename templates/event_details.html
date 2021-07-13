@@ -2,14 +2,14 @@
 
 <section class="section">
   <div class="container">
-    <h1 class="title">{{if eq .PageData.ID 0}}New{{else}}Edit{{end}} Event</h1>
+    <h1 class="title">{{if eq .PageData.Event.ID 0}}New{{else}}Edit{{end}} Event</h1>
 
       <form action="/admin/event/save" method="post">
 
         <div class="field" hidden>
           <label class="label">ID</label>
           <div class="control">
-            <input class="input" type="number" name="ID" value="{{.PageData.ID}}" readonly>
+            <input class="input" type="number" name="ID" value="{{.PageData.Event.ID}}" readonly>
           </div>
         </div>
 
@@ -27,21 +27,21 @@
         <div class="field">
           <label class="label">Name</label>
           <div class="control">
-            <input class="input" type="text" name="Name" value="{{.PageData.Name}}" required>
+            <input class="input" type="text" name="Name" value="{{.PageData.Event.Name}}" required>
           </div>
         </div>
 
         <div class="field">
           <label class="label">Description</label>
           <div class="control">
-            <textarea class="textarea" name="Description" rows="4">{{.PageData.Description}}</textarea>
+            <textarea class="textarea" name="Description" rows="4">{{.PageData.Event.Description}}</textarea>
           </div>
         </div>
 
         <div class="field">
           <label class="label">Start Time</label>
           <div class="control">
-            <input class="input" type="date" name="StartTime" value="{{.PageData.StartTime}}" required>
+            <input class="input" type="date" name="StartTime" value="{{.PageData.Event.StartTime}}" required>
           </div>
         </div>
 
@@ -52,16 +52,19 @@
                    type="number"
                    name="Length"
                    min="0"
-                   value="{{.PageData.Length}}"
+                   value="{{.PageData.Event.Length}}"
                    required>
           </div>
         </div>
 
-<!--        TODO: show a dropdown select that lists available locations instead of asking for an ID-->
         <div class="field">
-          <label class="label">Location ID</label>
-          <div class="control">
-            <input class="input" type="text" name="LocationID" value="{{.PageData.LocationID}}" required>
+          <label class="label">Location</label>
+          <div class="select">
+            <select name="LocationID">
+              {{range .PageData.Locations}}
+              <option value="{{.ID}}" {{if eq .ID $.PageData.Event.LocationID}}selected{{end}}>{{.Name}}</option>
+              {{end}}
+            </select>
           </div>
         </div>
 
@@ -69,14 +72,14 @@
         <div class="field">
           <label class="label">Image ID</label>
           <div class="control">
-            <input class="input" type="text" name="ImageID" value="{{if .PageData.ImageID.Valid}}{{.PageData.ImageID}}{{end}}">
+            <input class="input" type="text" name="ImageID" value="{{if .PageData.Event.ImageID.Valid}}{{.PageData.Event.ImageID}}{{end}}">
           </div>
         </div>
 
         <div class="field">
           <div class="control">
               <label class="checkbox">
-                  <input type="checkbox" name="KeyEvent" {{if .PageData.KeyEvent}}checked{{end}}>
+                  <input type="checkbox" name="KeyEvent" {{if .PageData.Event.KeyEvent}}checked{{end}}>
                   <strong>Key Event</strong> (featured on Home screen of app)
               </label>
           </div>

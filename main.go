@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -383,10 +384,19 @@ func (s *server) adminEvents() {
 }
 
 func (s *server) adminEventDetails() {
+	locations, err := model.ListLocations(s.db)
+	if err != nil {
+		s.adminError(fmt.Errorf("failed to load locations: %w", err))
+		return
+	}
+
 	id := s.r.URL.Query().Get("id")
 	if id == "" {
 		// Form to create a new event
-		s.renderTemplate("event_details", model.Event{})
+		s.renderTemplate("event_details", map[string]interface{}{
+			"Event":     model.Event{},
+			"Locations": locations,
+		})
 		return
 	}
 	// Form to update an existing event
@@ -395,7 +405,10 @@ func (s *server) adminEventDetails() {
 		s.adminError(err)
 		return
 	}
-	s.renderTemplate("event_details", event)
+	s.renderTemplate("event_details", map[string]interface{}{
+		"Event":     event,
+		"Locations": locations,
+	})
 }
 
 func (s *server) adminEventSave() {
