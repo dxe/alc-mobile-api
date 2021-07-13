@@ -13,11 +13,14 @@
           </div>
         </div>
 
-        <!--      TODO: This should show a select based on conference data in database-->
         <div class="field">
-          <label class="label">Conference ID</label>
-          <div class="control">
-            <input class="input" type="number" name="ConferenceID" value="1" readonly>
+          <label class="label">Conference</label>
+          <div class="select">
+            <select name="ConferenceID">
+              {{range .Conferences}}
+              <option value="{{.ID}}" {{if eq .ID $.DefaultConferenceID}}selected{{end}}>{{.Name}}</option>
+              {{end}}
+            </select>
           </div>
         </div>
 

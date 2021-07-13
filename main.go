@@ -34,6 +34,20 @@ func config(key string) string {
 	panic("unreachable")
 }
 
+func configInt(key string) int {
+	if v := os.Getenv(key); v != "" {
+		intVal, err := strconv.Atoi(v)
+		if err != nil {
+			log.Fatalf("failed to parse configuration for %v as int", key)
+		}
+		return intVal
+	}
+	log.Fatalf("missing configuration for %v", key)
+	panic("unreachable")
+}
+
+//os.Getenv("DEFAULT_CONFERENCE_ID")
+
 const isoTimeLayout = "2006-01-02T15:04:05.000Z"
 const dbTimeLayout = "2006-01-02 15:04:05"
 
@@ -178,14 +192,21 @@ func (s *server) index() {
 
 func (s *server) renderTemplate(name string, pageData interface{}) {
 	type templateData struct {
-		UserEmail string
-		PageName  string
-		PageData  interface{}
+		UserEmail           string
+		PageName            string
+		PageData            interface{}
+		Conferences         []model.Conference
+		DefaultConferenceID int
 	}
+
+	conferences, err := model.ListConferences(s.db, model.ConferenceOptions{})
+
 	data := templateData{
-		UserEmail: s.email,
-		PageName:  name,
-		PageData:  pageData,
+		UserEmail:           s.email,
+		PageName:            name,
+		PageData:            pageData,
+		Conferences:         conferences,
+		DefaultConferenceID: configInt("DEFAULT_CONFERENCE_ID"),
 	}
 
 	tmpl, err := template.New("").Funcs(template.FuncMap{
