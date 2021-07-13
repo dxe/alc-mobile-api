@@ -51,13 +51,6 @@ CREATE TABLE IF NOT EXISTS locations (
 `)
 
 	db.MustExec(`
-CREATE TABLE IF NOT EXISTS images (
-	id INTEGER PRIMARY KEY AUTO_INCREMENT,
-	url VARCHAR(400) NOT NULL
-)
-`)
-
-	db.MustExec(`
 CREATE TABLE IF NOT EXISTS events (
 	id INTEGER PRIMARY KEY AUTO_INCREMENT,
 	conference_id INTEGER,
@@ -66,11 +59,10 @@ CREATE TABLE IF NOT EXISTS events (
     start_time DATETIME NOT NULL,
     length INTEGER NOT NULL,
     location_id INTEGER,
-    image_id INTEGER,
+    image_url VARCHAR(128),
     key_event TINYINT NOT NULL DEFAULT '0',
     FOREIGN KEY (conference_id) REFERENCES conferences(id),
-    FOREIGN KEY (location_id) REFERENCES locations(id),
-    FOREIGN KEY (image_id) REFERENCES images(id)
+    FOREIGN KEY (location_id) REFERENCES locations(id)
 )
 `)
 
@@ -167,7 +159,7 @@ VALUES
 `)
 
 	db.MustExec(`
-INSERT INTO events (id, name, description, start_time, length, location_id, image_id, key_event, conference_id)
+INSERT INTO events (id, name, description, start_time, length, location_id, image_url, key_event, conference_id)
 VALUES
 	(1,'Registration','Pellentesque at nulla. Suspendisse potenti. Cras in purus eu magna vulputate luctus.\n\nCum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vivamus vestibulum sagittis sapien. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.','2021-09-24 17:00:01',60,1,NULL,0,1),
 	(2,'Event 2','Integer ac leo. Pellentesque ultrices mattis odio. Donec vitae nisi.\n\nNam ultrices, libero non mattis pulvinar, nulla pede ullamcorper augue, a suscipit nulla elit ac nulla. Sed vel enim sit amet nunc viverra dapibus. Nulla suscipit ligula in lacus.\n\nCurabitur at ipsum ac tellus semper interdum. Mauris ullamcorper purus sit amet nulla. Quisque arcu libero, rutrum ac, lobortis vel, dapibus at, diam.','2021-09-24 18:00:01',90,2,NULL,0,1),

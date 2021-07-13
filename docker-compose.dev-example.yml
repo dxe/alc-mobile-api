@@ -28,3 +28,7 @@ services:
       - OAUTH_CLIENT_ID=
       - OAUTH_CLIENT_SECRET=
       - DEFAULT_CONFERENCE_ID=1
+      - S3_REGION=us-west-2
+      - S3_BUCKET=
+      - S3_AUTH_ID=
+      - S3_SECRET=

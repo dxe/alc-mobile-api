@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+
 	"github.com/dxe/alc-mobile-api/model"
 
 	"github.com/coreos/go-oidc"
@@ -82,10 +84,20 @@ func main() {
 		log.Fatalf("failed to create Google OIDC verifier: %v", err)
 	}
 
+	awsRegion := config("S3_REGION")
+	awsAuthID := config("S3_AUTH_ID")
+	awsSecret := config("S3_SECRET")
+
+	awsSession, err := NewAWSSession(awsRegion, awsAuthID, awsSecret)
+	if err != nil {
+		log.Fatalf("failed to create AWS session: %v", err)
+	}
+
 	newServer := func(w http.ResponseWriter, r *http.Request) *server {
 		return &server{
-			conf:     conf,
-			verifier: verifier,
+			conf:       conf,
+			verifier:   verifier,
+			awsSession: awsSession,
 
 			db: db,
 			w:  w,
@@ -172,8 +184,9 @@ func main() {
 }
 
 type server struct {
-	conf     *oauth2.Config
-	verifier *oidc.IDTokenVerifier
+	conf       *oauth2.Config
+	verifier   *oidc.IDTokenVerifier
+	awsSession *session.Session
 
 	email string
 
@@ -412,10 +425,13 @@ func (s *server) adminEventDetails() {
 }
 
 func (s *server) adminEventSave() {
-	if err := s.r.ParseForm(); err != nil {
-		s.adminError(err)
+	maxImgSize := int64(1024 * 1000 * 5) // allow only 5MB of file size
+	if err := s.r.ParseMultipartForm(maxImgSize); err != nil {
+		s.adminError(fmt.Errorf("failed to parse form (image over 5MB?): %w", err))
 		return
 	}
+
+	// TODO(jhobbs): make a CleanEventFormData function in the Event model to abstract some of this out of main.go?
 
 	id, err := strconv.Atoi(s.r.Form.Get("ID"))
 	if err != nil {
@@ -452,9 +468,32 @@ func (s *server) adminEventSave() {
 		return
 	}
 
-	var imageID sql.NullInt64
-	if imageID.Int64, err = strconv.ParseInt(s.r.Form.Get("ImageID"), 10, 64); err == nil {
-		imageID.Valid = true
+	var imageURL sql.NullString
+
+	file, fileHeader, err := s.r.FormFile("Image")
+	switch err {
+	case nil:
+		defer file.Close()
+		// Handle the new file upload
+		log.Println("Processing new file!")
+		// TODO(jhobbs): get the full url to the file instead of just the name?
+		imageURL.String, err = UploadFileToS3(s.awsSession, file, fileHeader)
+		if err != nil {
+			s.adminError(fmt.Errorf("failed to upload file: %w", err))
+			return
+		}
+	case http.ErrMissingFile:
+		// No file provided, so just use the existing URL
+		log.Println("No file provided!")
+		imageURL.String = s.r.Form.Get("ImageURL")
+	default:
+		// Unexpected error
+		s.adminError(fmt.Errorf("failed to get uploaded file: %w", err))
+		return
+	}
+
+	if imageURL.String != "" {
+		imageURL.Valid = true
 	}
 
 	event := model.Event{
@@ -466,7 +505,7 @@ func (s *server) adminEventSave() {
 		Length:       length,
 		KeyEvent:     keyEvent,
 		LocationID:   locationID,
-		ImageID:      imageID,
+		ImageURL:     imageURL,
 	}
 
 	// update the database

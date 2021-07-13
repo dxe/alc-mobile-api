@@ -4,7 +4,7 @@
   <div class="container">
     <h1 class="title">{{if eq .PageData.Event.ID 0}}New{{else}}Edit{{end}} Event</h1>
 
-      <form action="/admin/event/save" method="post">
+      <form action="/admin/event/save" enctype="multipart/form-data" method="post">
 
         <div class="field" hidden>
           <label class="label">ID</label>
@@ -68,20 +68,41 @@
           </div>
         </div>
 
-<!--        TODO: show a form to upload an image instead of asking for an ID-->
-        <div class="field">
-          <label class="label">Image ID</label>
-          <div class="control">
-            <input class="input" type="text" name="ImageID" value="{{if .PageData.Event.ImageID.Valid}}{{.PageData.Event.ImageID}}{{end}}">
-          </div>
-        </div>
-
         <div class="field">
           <div class="control">
               <label class="checkbox">
                   <input type="checkbox" name="KeyEvent" {{if .PageData.Event.KeyEvent}}checked{{end}}>
                   <strong>Key Event</strong> (featured on Home screen of app)
               </label>
+          </div>
+        </div>
+
+        <div class="field" id="file-upload">
+          <label class="label">Image</label>
+          {{if .PageData.Event.ImageURL.Valid}}
+            <figure class="image is-128x128">
+              <img src="{{.PageData.Event.ImageURL.String}}">
+            </figure>
+          {{end}}
+          <div class="file has-name">
+            <label class="file-label">
+            <input class="file-input" type="file" name="Image">
+              <span class="file-cta">
+                <span class="file-label">
+                  Choose a file…
+                </span>
+              </span>
+              <span class="file-name">
+                {{.PageData.Event.ImageURL.String}}
+              </span>
+            </label>
+          </div>
+        </div>
+
+        <div class="field" hidden>
+          <label class="label">Image URL</label>
+          <div class="control">
+            <input class="input" type="text" name="ImageURL" value="{{.PageData.Event.ImageURL.String}}">
           </div>
         </div>
 
@@ -98,5 +119,15 @@
 
   </div>
 </section>
+
+<script>
+    const fileInput = document.querySelector('#file-upload input[type=file]');
+    fileInput.onchange = () => {
+      if (fileInput.files.length > 0) {
+        const fileName = document.querySelector('#file-upload .file-name');
+          fileName.textContent = fileInput.files[0].name;
+        }
+    }
+</script>
 
 {{template "footer.html" .}}
