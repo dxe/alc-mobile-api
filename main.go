@@ -633,17 +633,25 @@ func (s *server) listInfo() {
 }
 
 func (s *server) listAnnouncements() {
-	// TODO(jhobbs): pass in the conference id as a parameter
+	conferenceID, err := strconv.Atoi(s.r.URL.Query().Get("conference_id"))
+	if err != nil {
+		s.serveJSON(nil, errors.New("conference_id missing or invalid"))
+		return
+	}
 	s.serveJSON(model.ListAnnouncements(s.db, model.AnnouncementOptions{
 		IncludeScheduled: false,
-		ConferenceID:     1,
+		ConferenceID:     conferenceID,
 	}))
 }
 
 func (s *server) listEvents() {
-	// TODO(jhobbs): pass in the conference id as a parameter
+	conferenceID, err := strconv.Atoi(s.r.URL.Query().Get("conference_id"))
+	if err != nil {
+		s.serveJSON(nil, errors.New("conference_id missing or invalid"))
+		return
+	}
 	s.serveJSON(model.ListEvents(s.db, model.EventOptions{
-		ConferenceID: 1,
+		ConferenceID: conferenceID,
 	}))
 }
 
