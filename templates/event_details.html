@@ -18,7 +18,7 @@
           <div class="select">
             <select name="ConferenceID">
               {{range .Conferences}}
-              <option value="{{.ID}}" {{if eq .ID $.DefaultConferenceID}}selected{{end}}>{{.Name}}</option>
+                <option value="{{.ID}}" {{if eq .ID $.DefaultConferenceID}}selected{{end}}>{{.Name}}</option>
               {{end}}
             </select>
           </div>
