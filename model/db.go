@@ -1,18 +1,49 @@
 package model
 
 import (
+	"context"
 	"log"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
 
-func NewDB(connectionString string) *sqlx.DB {
-	db, err := sqlx.Open("mysql", connectionString)
+func NewDB(dsn string) *sqlx.DB {
+	ctx := context.Background()
+
+	db, err := sqlx.Open("mysql", dsn)
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to open database: %v", err)
 	}
-	log.Println("Connected to database.")
+	ping(ctx, db, time.Now().Add(time.Minute))
+
+	log.Println("connected to database")
+	// TODO(jhobbs): Init db here or in main?
+	InitDatabase(db)
 	return db
+}
+
+// ping repeatedly tries to ping the database (at most once per
+// second) until deadline to ensure the connection is valid.
+func ping(ctx context.Context, db *sqlx.DB, deadline time.Time) {
+	ctx, cancel := context.WithDeadline(ctx, deadline)
+	defer cancel()
+
+	for {
+		err := db.PingContext(ctx)
+		if err == nil {
+			return // success
+		}
+		log.Printf("database ping failed: %v", err)
+
+		select {
+		case <-ctx.Done():
+			log.Fatalf("timed out trying to ping database")
+		default:
+		}
+
+		time.Sleep(time.Second) // pause before trying again
+	}
 }
 
 func InitDatabase(db *sqlx.DB) {
