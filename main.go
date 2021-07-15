@@ -91,7 +91,7 @@ func main() {
 	flag.Parse()
 
 	// TODO(mdempsky): Generalize.
-	r := http.DefaultServeMux
+	mux := http.NewServeMux()
 
 	db := model.NewDB(getDSN())
 
@@ -133,7 +133,7 @@ func main() {
 	}
 
 	handle := func(path string, method func(*server)) {
-		r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			method(newServer(w, r))
 		})
 	}
@@ -143,7 +143,7 @@ func main() {
 	// @directactioneverywhere.com account, because our OAuth2 settings
 	// are configured to "Internal".
 	handleAuth := func(path string, method func(*server)) {
-		r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			s := newServer(w, r)
 
 			email, err := s.googleEmail()
@@ -197,17 +197,18 @@ func main() {
 	// Healthcheck for load balancer
 	handle("/healthcheck", (*server).health)
 
-	// Unauthed API
-	handle("/conference/list", (*server).listConferences)
-	handle("/info/list", (*server).listInfo)
-	handle("/announcement/list", (*server).listAnnouncements)
-	handle("/event/list", (*server).listEvents)
+	// Public API
+	handle("/api/announcement/list", apiAnnouncementList.serve)
+	handle("/api/conference/list", apiConferenceList.serve)
+	handle("/api/event/list", apiEventList.serve)
+	handle("/api/info/list", apiInfoList.serve)
 
 	// Static file server
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	log.Println("Server started. Listening on port 8080.")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := &http.Server{Addr: ":8080", Handler: mux}
+	log.Fatal(server.ListenAndServe())
 }
 
 type server struct {
