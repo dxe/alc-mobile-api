@@ -16,7 +16,7 @@ type api struct {
 	// result.
 	query string
 
-	// args is a struct that that the JSON request body is decoded into.
+	// args returns a struct that that the JSON request body is decoded into.
 	args func() interface{}
 
 	// value returns a pointer to a newly allocated Go variable able to
