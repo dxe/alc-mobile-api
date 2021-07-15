@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -16,7 +17,8 @@ type api struct {
 	// result.
 	query string
 
-	// args returns a struct that that the JSON request body is decoded into.
+	// args returns a pointer to a newly allocated variable able to
+	// store the arguments from the JSON request body.
 	args func() interface{}
 
 	// value returns a pointer to a newly allocated Go variable able to
@@ -29,17 +31,21 @@ type api struct {
 // TODO: if args are required but not supplied, return a specific error message?
 
 func (a *api) serve(s *server) {
-	args := a.args()
-	err := json.NewDecoder(s.r.Body).Decode(&args)
-	if err != nil && err != io.EOF {
-		a.error(s, err)
-		return
-	}
+	query := a.query
+	queryArgs := make([]interface{}, 0)
 
-	query, queryArgs, err := s.db.BindNamed(a.query, args)
-	if err != nil {
-		a.error(s, err)
-		return
+	if a.args != nil {
+		args := a.args()
+		err := json.NewDecoder(s.r.Body).Decode(args)
+		if err != nil {
+			a.error(s, fmt.Errorf("failed to decode json request body (missings args?): %w", err))
+			return
+		}
+		query, queryArgs, err = s.db.BindNamed(a.query, args)
+		if err != nil {
+			a.error(s, err)
+			return
+		}
 	}
 
 	// TODO(mdempsky): Implement caching and/or single-flighting (e.g.,
@@ -47,7 +53,7 @@ func (a *api) serve(s *server) {
 	// request for each HTTP request.
 
 	var buf []byte
-	if err := s.db.QueryRowxContext(s.r.Context(), query, queryArgs...).Scan(&buf); err != nil {
+	if err := s.db.QueryRowContext(s.r.Context(), query, queryArgs...).Scan(&buf); err != nil {
 		a.error(s, err)
 		return
 	}
@@ -63,6 +69,12 @@ func (a *api) serve(s *server) {
 
 	s.w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	s.w.Write(buf)
+}
+
+func (a *api) error(s *server, err error) {
+	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	s.w.WriteHeader(http.StatusInternalServerError)
+	io.WriteString(s.w, err.Error())
 }
 
 // TODO(mdempsky): Unit tests to make sure queries below execute and
@@ -144,10 +156,4 @@ select json_arrayagg(json_object(
 ))
 from info i
 `,
-}
-
-func (a *api) error(s *server, err error) {
-	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	s.w.WriteHeader(http.StatusInternalServerError)
-	io.WriteString(s.w, err.Error())
 }
