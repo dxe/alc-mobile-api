@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-
 	"github.com/coreos/go-oidc"
 	"github.com/dxe/alc-mobile-api/model"
 	"github.com/go-sql-driver/mysql"
@@ -48,25 +47,9 @@ const dbTimeLayout = "2006-01-02 15:04:05"
 
 // getDSN returns the DSN string for the backing MySQL database.
 func getDSN() string {
-	var cfg *mysql.Config
-
-	if dsn := os.Getenv("DB_DSN"); dsn != "" {
-		var err error
-		cfg, err = mysql.ParseDSN(dsn)
-		if err != nil {
-			log.Fatalf("failed to parse MySQL DSN: %v", err)
-		}
-	} else {
-		// TODO(mdempsky): Change configs to use DB_DSN instead, and then
-		// remove -prod flag.
-		cfg = mysql.NewConfig()
-		cfg.User = config("DB_USER")
-		cfg.Passwd = config("DB_PASSWORD")
-		cfg.Net = config("DB_PROTOCOL")
-		cfg.DBName = config("DB_NAME")
-		if *flagProd {
-			cfg.TLSConfig = "true"
-		}
+	cfg, err := mysql.ParseDSN(config("DB_DSN"))
+	if err != nil {
+		log.Fatalf("failed to parse MySQL DSN: %v", err)
 	}
 
 	cfg.ParseTime = true
