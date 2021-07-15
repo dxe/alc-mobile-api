@@ -19,18 +19,36 @@ type api struct {
 	// value returns a pointer to a newly allocated Go variable able to
 	// represent the JSON object returned by the query.
 	value func() interface{}
+
+	// args is a struct that that the JSON request body is decoded into.
+	args struct {
+		ConferenceID int `json:"conference_id" db:"conference_id"`
+	}
 }
 
+// TODO: return an empty array instead of nothing if no results returned from database?
+
+// TODO: if args are required but not supplied, return a specific error message?
+
 func (a *api) serve(s *server) {
-	// TODO(mdempsky): Add mechanism for queries to specify custom
-	// arguments picked out of the request.
+	err := json.NewDecoder(s.r.Body).Decode(&a.args)
+	if err != nil && err != io.EOF {
+		a.error(s, err)
+		return
+	}
+
+	query, args, err := s.db.BindNamed(a.query, a.args)
+	if err != nil {
+		a.error(s, err)
+		return
+	}
 
 	// TODO(mdempsky): Implement caching and/or single-flighting (e.g.,
 	// golang.org/x/sync/singleflight), so we don't need to issue a DB
 	// request for each HTTP request.
 
 	var buf []byte
-	if err := s.db.QueryRowContext(s.r.Context(), a.query).Scan(&buf); err != nil {
+	if err := s.db.QueryRowxContext(s.r.Context(), query, args...).Scan(&buf); err != nil {
 		s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		s.w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(s.w, err.Error())
@@ -71,7 +89,7 @@ select json_arrayagg(json_object(
 ))
 from announcements a
 where a.sent
-  and a.conference_id = 1
+  and a.conference_id = :conference_id
 `,
 }
 
@@ -93,7 +111,6 @@ var apiEventList = api{
 	query: `
 select json_arrayagg(json_object(
   'id',            e.id,
-  'conference_id', e.conference_id,
   'name',          e.name,
   'description',   e.description,
   'start_time',    e.start_time,
@@ -103,8 +120,8 @@ select json_arrayagg(json_object(
   'image_url',     e.image_url
 ))
 from events e
+where conference_id = :conference_id
 `,
-	// TODO(mdempsky): Filter down conferences?
 }
 
 var apiInfoList = api{
@@ -120,4 +137,10 @@ select json_arrayagg(json_object(
 ))
 from info i
 `,
+}
+
+func (a *api) error(s *server, err error) {
+	s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	s.w.WriteHeader(http.StatusInternalServerError)
+	io.WriteString(s.w, err.Error())
 }
