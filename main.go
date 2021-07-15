@@ -28,26 +28,20 @@ var (
 )
 
 func config(key string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+	v := os.Getenv(key)
+	if v == "" {
+		log.Fatalf("missing configuration for %v", key)
 	}
-	log.Fatalf("missing configuration for %v", key)
-	panic("unreachable")
+	return v
 }
 
 func configInt(key string) int {
-	if v := os.Getenv(key); v != "" {
-		intVal, err := strconv.Atoi(v)
-		if err != nil {
-			log.Fatalf("failed to parse configuration for %v as int", key)
-		}
-		return intVal
+	intVal, err := strconv.Atoi(config(key))
+	if err != nil {
+		log.Fatalf("failed to parse configuration for %v as int", key)
 	}
-	log.Fatalf("missing configuration for %v", key)
-	panic("unreachable")
+	return intVal
 }
-
-//os.Getenv("DEFAULT_CONFERENCE_ID")
 
 const isoTimeLayout = "2006-01-02T15:04:05.000Z"
 const dbTimeLayout = "2006-01-02 15:04:05"
