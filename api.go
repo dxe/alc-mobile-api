@@ -49,9 +49,7 @@ func (a *api) serve(s *server) {
 
 	var buf []byte
 	if err := s.db.QueryRowxContext(s.r.Context(), query, args...).Scan(&buf); err != nil {
-		s.w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		s.w.WriteHeader(http.StatusInternalServerError)
-		io.WriteString(s.w, err.Error())
+		a.error(s, err)
 		return
 	}
 
