@@ -16,14 +16,12 @@ type api struct {
 	// result.
 	query string
 
+	// args is a struct that that the JSON request body is decoded into.
+	args func() interface{}
+
 	// value returns a pointer to a newly allocated Go variable able to
 	// represent the JSON object returned by the query.
 	value func() interface{}
-
-	// args is a struct that that the JSON request body is decoded into.
-	args struct {
-		ConferenceID int `json:"conference_id" db:"conference_id"`
-	}
 }
 
 // TODO: return an empty array instead of nothing if no results returned from database?
@@ -31,13 +29,14 @@ type api struct {
 // TODO: if args are required but not supplied, return a specific error message?
 
 func (a *api) serve(s *server) {
-	err := json.NewDecoder(s.r.Body).Decode(&a.args)
+	args := a.args()
+	err := json.NewDecoder(s.r.Body).Decode(&args)
 	if err != nil && err != io.EOF {
 		a.error(s, err)
 		return
 	}
 
-	query, args, err := s.db.BindNamed(a.query, a.args)
+	query, queryArgs, err := s.db.BindNamed(a.query, args)
 	if err != nil {
 		a.error(s, err)
 		return
@@ -48,7 +47,7 @@ func (a *api) serve(s *server) {
 	// request for each HTTP request.
 
 	var buf []byte
-	if err := s.db.QueryRowxContext(s.r.Context(), query, args...).Scan(&buf); err != nil {
+	if err := s.db.QueryRowxContext(s.r.Context(), query, queryArgs...).Scan(&buf); err != nil {
 		a.error(s, err)
 		return
 	}
@@ -89,6 +88,11 @@ from announcements a
 where a.sent
   and a.conference_id = :conference_id
 `,
+	args: func() interface{} {
+		return new(struct {
+			ConferenceID int `json:"conference_id" db:"conference_id"`
+		})
+	},
 }
 
 var apiConferenceList = api{
@@ -120,6 +124,11 @@ select json_arrayagg(json_object(
 from events e
 where conference_id = :conference_id
 `,
+	args: func() interface{} {
+		return new(struct {
+			ConferenceID int `json:"conference_id" db:"conference_id"`
+		})
+	},
 }
 
 var apiInfoList = api{
