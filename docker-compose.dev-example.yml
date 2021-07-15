@@ -21,10 +21,7 @@ services:
       - ./:/app
     environment:
       - BASE_URL=http://localhost:8080
-      - DB_USER=alc_mobile_user
-      - DB_PASSWORD=alc_password
-      - DB_NAME=alc_mobile
-      - DB_PROTOCOL=tcp(db:3306)
+      - DB_DSN=alc_mobile_user:alc_password@tcp(db:3306)/alc_mobile
       - OAUTH_CLIENT_ID=
       - OAUTH_CLIENT_SECRET=
       - DEFAULT_CONFERENCE_ID=1
