@@ -93,16 +93,23 @@ var apiEventList = api{
 	query: `
 select json_arrayagg(json_object(
   'id',            e.id,
-  'conference_id', e.conference_id,
   'name',          e.name,
   'description',   e.description,
   'start_time',    e.start_time,
   'length',        e.length,
   'key_event',     e.key_event != 0,` /* TODO(mdempsky): Change SQL schema to use bool */ + `
-  'location_id',   e.location_id,
+  'location',      json_object(
+ 		'name', l.name,
+		'place_id', l.place_id,
+		'address', l.address,
+		'city', l.city,
+		'lat', l.lat,
+		'lng', l.lng
+  ),
   'image_url',     e.image_url
 ))
 from events e
+join locations l on e.location_id = l.id
 `,
 	// TODO(mdempsky): Filter down conferences?
 }
