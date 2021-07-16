@@ -17,6 +17,10 @@ type api struct {
 	// result.
 	query string
 
+	// returnsNoRows should be set to true if the query should not
+	// return any rows (for example, if it's an INSERT or UPDATE query).
+	returnsNoRows bool
+
 	// args returns a pointer to a newly allocated variable able to
 	// store the arguments from the JSON request body.
 	args func() interface{}
@@ -27,21 +31,23 @@ type api struct {
 }
 
 func (a *api) serve(s *server) {
-	query := a.query
-	queryArgs := make([]interface{}, 0)
+	var queryArgs interface{}
 
 	if a.args != nil {
 		args := a.args()
 		err := json.NewDecoder(s.r.Body).Decode(args)
 		if err != nil {
-			a.error(s, fmt.Errorf("failed to decode json request body (missings args?): %w", err))
+			a.error(s, fmt.Errorf("failed to decode json request body: %w", err))
 			return
 		}
-		query, queryArgs, err = s.db.BindNamed(a.query, args)
-		if err != nil {
+		queryArgs = args
+	}
+
+	if a.returnsNoRows {
+		if _, err := s.db.NamedExecContext(s.r.Context(), a.query, queryArgs); err != nil {
 			a.error(s, err)
-			return
 		}
+		return
 	}
 
 	// TODO(mdempsky): Implement caching and/or single-flighting (e.g.,
@@ -49,7 +55,13 @@ func (a *api) serve(s *server) {
 	// request for each HTTP request.
 
 	var buf []byte
-	if err := s.db.QueryRowContext(s.r.Context(), query, queryArgs...).Scan(&buf); err != nil {
+	result, err := s.db.NamedQueryContext(s.r.Context(), a.query, queryArgs)
+	if err != nil {
+		a.error(s, err)
+		return
+	}
+	result.Next()
+	if err := result.Scan(&buf); err != nil {
 		a.error(s, err)
 		return
 	}
@@ -134,7 +146,27 @@ select json_arrayagg(json_object(
 		'lat', l.lat,
 		'lng', l.lng
   ),
-  'image_url',     e.image_url
+  'image_url',     e.image_url,
+  'total_attendees', (
+		select count(distinct rsvpTotal.user_id)
+		from rsvp rsvpTotal
+		where rsvpTotal.event_id = e.id and rsvpTotal.attending
+  ),
+  'attendees', (
+		select json_arrayagg(json_object('name', users.name))
+		from rsvp rsvpList
+		join users on rsvpList.user_id = users.id
+		where rsvpList.event_id = e.id and rsvpList.attending
+  ),
+  'attending', (
+		case when(
+			select attending
+			from rsvp rsvpStatus
+			where rsvpStatus.event_id = e.id and rsvpStatus.user_id = :user_id
+		) then true
+          else false
+          end
+  )
 ))
 from events e
 join locations l on e.location_id = l.id
@@ -143,6 +175,7 @@ where conference_id = :conference_id
 	args: func() interface{} {
 		return new(struct {
 			ConferenceID int `json:"conference_id" db:"conference_id"`
+			UserID       int `json:"user_id" db:"user_id"`
 		})
 	},
 }
@@ -160,4 +193,39 @@ select json_arrayagg(json_object(
 ))
 from info i
 `,
+}
+
+var apiUserAdd = api{
+	value: func() interface{} { return new([]model.User) },
+	query: `
+insert into users (conference_id, name, email, device_id, device_name, platform, timestamp)
+values (:conference_id, :name, :email, :device_id, :device_name, :platform, now())
+`,
+	args: func() interface{} {
+		return new(struct {
+			ConferenceID   int    `json:"conference_id" db:"conference_id"`
+			Name           string `json:"name" db:"name"`
+			Email          string `json:"email" db:"email"`
+			DeviceID       string `json:"device_id" db:"device_id"`
+			DeviceName     string `json:"device_name" db:"device_name"`
+			DevicePlatform string `json:"platform" db:"platform"`
+		})
+	},
+	returnsNoRows: true,
+}
+
+var apiUserRSVP = api{
+	value: func() interface{} { return new([]model.RSVP) },
+	query: `
+replace into rsvp (event_id, user_id, attending, timestamp)
+values (:event_id, :user_id, :attending, now())
+`,
+	args: func() interface{} {
+		return new(struct {
+			EventID   int  `json:"event_id" db:"event_id"`
+			UserID    int  `json:"user_id" db:"user_id"`
+			Attending bool `json:"attending" db:"attending"`
+		})
+	},
+	returnsNoRows: true,
 }

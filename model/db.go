@@ -65,6 +65,7 @@ CREATE TABLE IF NOT EXISTS users (
     device_id VARCHAR(200),
     device_name VARCHAR(200),
     platform VARCHAR(60),
+    timestamp TIMESTAMP NOT NULL,
     FOREIGN KEY (conference_id) REFERENCES conferences(id)
 )
 `)
@@ -102,6 +103,7 @@ CREATE TABLE IF NOT EXISTS rsvp (
 	event_id INTEGER NOT NULL,
 	user_id INTEGER NOT NULL,
 	attending TINYINT NOT NULL DEFAULT '0',
+	timestamp TIMESTAMP NOT NULL,
     PRIMARY KEY (event_id, user_id),
     FOREIGN KEY (event_id) REFERENCES events(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
