@@ -17,10 +17,6 @@ type api struct {
 	// result.
 	query string
 
-	// returnsNoRows should be set to true if the query should not
-	// return any rows (for example, if it's an INSERT or UPDATE query).
-	returnsNoRows bool
-
 	// args returns a pointer to a newly allocated variable able to
 	// store the arguments from the JSON request body.
 	args func() interface{}
@@ -43,7 +39,7 @@ func (a *api) serve(s *server) {
 		queryArgs = args
 	}
 
-	if a.returnsNoRows {
+	if a.value == nil {
 		if _, err := s.db.NamedExecContext(s.r.Context(), a.query, queryArgs); err != nil {
 			a.error(s, err)
 		}
@@ -196,7 +192,6 @@ from info i
 }
 
 var apiUserAdd = api{
-	value: func() interface{} { return new([]model.User) },
 	query: `
 insert into users (conference_id, name, email, device_id, device_name, platform, timestamp)
 values (:conference_id, :name, :email, :device_id, :device_name, :platform, now())
@@ -211,21 +206,30 @@ values (:conference_id, :name, :email, :device_id, :device_name, :platform, now(
 			DevicePlatform string `json:"platform" db:"platform"`
 		})
 	},
-	returnsNoRows: true,
 }
 
 var apiUserRSVP = api{
-	value: func() interface{} { return new([]model.RSVP) },
 	query: `
 replace into rsvp (event_id, user_id, attending, timestamp)
-values (:event_id, :user_id, :attending, now())
+values (:event_id, (SELECT id FROM users WHERE device_id = :device_id), :attending, now())
 `,
 	args: func() interface{} {
 		return new(struct {
-			EventID   int  `json:"event_id" db:"event_id"`
-			UserID    int  `json:"user_id" db:"user_id"`
-			Attending bool `json:"attending" db:"attending"`
+			EventID   int    `json:"event_id" db:"event_id"`
+			DeviceID  string `json:"device_id" db:"device_id"`
+			Attending bool   `json:"attending" db:"attending"`
 		})
 	},
-	returnsNoRows: true,
+}
+
+var apiUserRegisterPushNotifications = api{
+	query: `
+update users set expo_push_token = :expo_push_token where device_id = :device_id
+`,
+	args: func() interface{} {
+		return new(struct {
+			DeviceID      string `json:"device_id" db:"device_id"`
+			ExpoPushToken string `json:"expo_push_token" db:"expo_push_token"`
+		})
+	},
 }

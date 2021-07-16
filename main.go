@@ -174,9 +174,10 @@ func main() {
 	handle("/api/announcement/list", apiAnnouncementList.serve)
 	handle("/api/conference/list", apiConferenceList.serve)
 	handle("/api/event/list", apiEventList.serve)
+	handle("/api/event/rsvp", apiUserRSVP.serve)
 	handle("/api/info/list", apiInfoList.serve)
 	handle("/api/user/add", apiUserAdd.serve)
-	handle("/api/user/rsvp", apiUserRSVP.serve)
+	handle("/api/user/register_push_notifications", apiUserRegisterPushNotifications.serve)
 
 	// Static file server
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

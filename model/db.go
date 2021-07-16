@@ -66,6 +66,7 @@ CREATE TABLE IF NOT EXISTS users (
     device_name VARCHAR(200),
     platform VARCHAR(60),
     timestamp TIMESTAMP NOT NULL,
+    expo_push_token VARCHAR(60) DEFAULT NULL,
     FOREIGN KEY (conference_id) REFERENCES conferences(id)
 )
 `)
@@ -157,6 +158,7 @@ func WipeDatabase(db *sqlx.DB, flagProd bool) {
 		log.Fatalln("Cannot wipe database in prod! Exiting!")
 	}
 	db.MustExec(`DROP TABLE IF EXISTS rsvp`)
+	db.MustExec(`DROP TABLE IF EXISTS notifications`)
 	db.MustExec(`DROP TABLE IF EXISTS users`)
 	db.MustExec(`DROP TABLE IF EXISTS events`)
 	db.MustExec(`DROP TABLE IF EXISTS images`)
@@ -164,7 +166,6 @@ func WipeDatabase(db *sqlx.DB, flagProd bool) {
 	db.MustExec(`DROP TABLE IF EXISTS info`)
 	db.MustExec(`DROP TABLE IF EXISTS announcements`)
 	db.MustExec(`DROP TABLE IF EXISTS conferences`)
-	db.MustExec(`DROP TABLE IF EXISTS notifications`)
 }
 
 func InsertMockData(db *sqlx.DB, flagProd bool) {
