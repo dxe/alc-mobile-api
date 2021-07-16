@@ -135,6 +135,20 @@ CREATE TABLE IF NOT EXISTS announcements (
 )
 `)
 
+	db.MustExec(`
+CREATE TABLE IF NOT EXISTS notifications (
+	user_id INTEGER,
+	announcement_id INTEGER,
+	status VARCHAR(60),
+    receipt VARCHAR(60),
+    receipt_status VARCHAR(60),
+    timestamp TIMESTAMP DEFAULT NOW(),
+	PRIMARY KEY (user_id, announcement_id),
+	FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (announcement_id) REFERENCES announcements(id)
+)
+`)
+
 }
 
 // WipeDatabase drops all tables in the database.
@@ -150,6 +164,7 @@ func WipeDatabase(db *sqlx.DB, flagProd bool) {
 	db.MustExec(`DROP TABLE IF EXISTS info`)
 	db.MustExec(`DROP TABLE IF EXISTS announcements`)
 	db.MustExec(`DROP TABLE IF EXISTS conferences`)
+	db.MustExec(`DROP TABLE IF EXISTS notifications`)
 }
 
 func InsertMockData(db *sqlx.DB, flagProd bool) {
