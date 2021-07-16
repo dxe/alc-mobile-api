@@ -81,10 +81,10 @@
           <label class="label">Image</label>
           <div class="file has-name">
             <label class="file-label">
-            <input class="file-input" type="file" name="Image">
+            <input id="file-input" class="file-input" type="file" name="Image" accept="image/jpeg">
               <span class="file-cta">
                 <span class="file-label">
-                  Choose a file…
+                  Choose a file (jpg)…
                 </span>
               </span>
               <span class="file-name">
@@ -93,7 +93,8 @@
             </label>
           </div>
           {{if .PageData.Event.ImageURL.Valid}}
-            <figure class="image is-128x128 m-2">
+            <a id="remove-image-button" onclick="clearFileName()">Remove image</a>
+            <figure class="image is-128x128 m-2" id="image-preview">
               <img src="{{.PageData.Event.ImageURL.String}}">
             </figure>
           {{end}}
@@ -102,7 +103,7 @@
         <div class="field" hidden>
           <label class="label">Image URL</label>
           <div class="control">
-            <input class="input" type="text" name="ImageURL" value="{{.PageData.Event.ImageURL.String}}">
+            <input id="image-url" class="input" type="text" name="ImageURL" value="{{.PageData.Event.ImageURL.String}}">
           </div>
         </div>
 
@@ -127,6 +128,13 @@
         const fileName = document.querySelector('#file-upload .file-name');
           fileName.textContent = fileInput.files[0].name;
         }
+    }
+
+    function clearFileName() {
+      document.querySelector('#file-upload .file-name').textContent = "";
+      document.querySelector('#image-url').value = "";
+      document.querySelector("#image-preview").style.display = "none";
+      document.querySelector("#remove-image-button").style.display = "none";
     }
 </script>
 

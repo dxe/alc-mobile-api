@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -246,15 +245,18 @@ func (s *server) adminEventSave() {
 	case nil:
 		defer file.Close()
 		// Handle the new file upload
-		log.Println("Processing new file!")
-		imageURL.String, err = UploadFileToS3(s.awsSession, file, fileHeader)
+		image, err := ResizeJPG(file, 1200)
+		if err != nil {
+			s.adminError(fmt.Errorf("failed to resize image: %w", err))
+			return
+		}
+		imageURL.String, err = UploadFileToS3(s.awsSession, image, fileHeader.Filename)
 		if err != nil {
 			s.adminError(fmt.Errorf("failed to upload file: %w", err))
 			return
 		}
 	case http.ErrMissingFile:
 		// No file provided, so just use the existing URL
-		log.Println("No file provided!")
 		imageURL.String = s.r.Form.Get("ImageURL")
 	default:
 		// Unexpected error
