@@ -9,27 +9,22 @@ import (
 )
 
 type Announcement struct {
-	ID           int    `db:"id" json:"id"`
-	ConferenceID int    `db:"conference_id" json:"conference_id"`
-	Title        string `db:"title" json:"title"`
-	Message      string `db:"message" json:"message"`
-	Icon         string `db:"icon" json:"icon"`
-	CreatedBy    string `db:"created_by" json:"created_by"`
-	SendTime     string `db:"send_time" json:"send_time"`
-	Sent         bool   `db:"sent" json:"sent"`
+	ID           int    `db:"id"`
+	ConferenceID int    `db:"conference_id"`
+	Title        string `db:"title"`
+	Message      string `db:"message"`
+	Icon         string `db:"icon"`
+	CreatedBy    string `db:"created_by"`
+	SendTime     string `db:"send_time"`
+	Sent         bool   `db:"sent"`
 }
 
 type AnnouncementOptions struct {
 	IncludeScheduled       bool
-	ConferenceID           int
 	ConvertTimeToUSPacific bool
 }
 
 func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement, error) {
-	if options.ConferenceID == 0 {
-		return nil, errors.New("must provide conference id")
-	}
-
 	timeQuery := "send_time"
 	if options.ConvertTimeToUSPacific {
 		timeQuery = `DATE_FORMAT(CONVERT_TZ(send_time, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as send_time`
@@ -40,14 +35,13 @@ SELECT id, conference_id, title, message, icon, created_by,
        ` + timeQuery + `,
        sent
 FROM announcements
-WHERE conference_id = ?
 ORDER BY announcements.send_time asc
 `
 	if !options.IncludeScheduled {
 		query += " AND sent = 1"
 	}
 	var announcements []Announcement
-	if err := db.Select(&announcements, query, options.ConferenceID); err != nil {
+	if err := db.Select(&announcements, query); err != nil {
 		return announcements, fmt.Errorf("failed to list announcements: %w", err)
 	}
 	if announcements == nil {

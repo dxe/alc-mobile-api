@@ -161,7 +161,7 @@ func (s *server) adminLocationDelete() {
 }
 
 func (s *server) adminEvents() {
-	eventData, err := model.ListEvents(s.db, model.EventOptions{ConferenceID: 1, ConvertTimeToUSPacific: true})
+	eventData, err := model.ListEvents(s.db, model.EventOptions{ConvertTimeToUSPacific: true})
 	if err != nil {
 		panic(err)
 	}
@@ -367,7 +367,6 @@ func (s *server) adminInfoDelete() {
 
 func (s *server) adminAnnouncements() {
 	announcementData, err := model.ListAnnouncements(s.db, model.AnnouncementOptions{
-		ConferenceID:           1,
 		IncludeScheduled:       true,
 		ConvertTimeToUSPacific: true,
 	})

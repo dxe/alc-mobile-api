@@ -9,10 +9,10 @@ import (
 )
 
 type Conference struct {
-	ID        int    `db:"id" json:"id"`
-	Name      string `db:"name" json:"name"`
-	StartDate string `db:"start_date" json:"start_date"`
-	EndDate   string `db:"end_date" json:"end_date"`
+	ID        int    `db:"id"`
+	Name      string `db:"name"`
+	StartDate string `db:"start_date"`
+	EndDate   string `db:"end_date"`
 }
 
 type ConferenceOptions struct {

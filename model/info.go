@@ -8,12 +8,12 @@ import (
 )
 
 type Info struct {
-	ID           int    `db:"id" json:"id"`
-	Title        string `db:"title" json:"title"`
-	Subtitle     string `db:"subtitle" json:"subtitle"`
-	Content      string `db:"content" json:"content"`
-	Icon         string `db:"icon" json:"icon"`
-	DisplayOrder int    `db:"display_order" json:"display_order"`
+	ID           int    `db:"id"`
+	Title        string `db:"title"`
+	Subtitle     string `db:"subtitle"`
+	Content      string `db:"content"`
+	Icon         string `db:"icon"`
+	DisplayOrder int    `db:"display_order"`
 }
 
 func ListInfo(db *sqlx.DB) ([]Info, error) {

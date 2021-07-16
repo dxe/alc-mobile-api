@@ -9,13 +9,13 @@ import (
 )
 
 type Location struct {
-	ID      int     `db:"id" json:"id"`
-	Name    string  `db:"name" json:"name"`
-	PlaceID string  `db:"place_id" json:"place_id"`
-	Address string  `db:"address" json:"address"`
-	City    string  `db:"city" json:"city"`
-	Lat     float64 `db:"lat" json:"lat"`
-	Lng     float64 `db:"lng" json:"lng"`
+	ID      int     `db:"id"`
+	Name    string  `db:"name"`
+	PlaceID string  `db:"place_id"`
+	Address string  `db:"address"`
+	City    string  `db:"city"`
+	Lat     float64 `db:"lat"`
+	Lng     float64 `db:"lng"`
 }
 
 func ListLocations(db *sqlx.DB) ([]Location, error) {

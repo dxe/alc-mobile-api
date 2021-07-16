@@ -9,30 +9,25 @@ import (
 )
 
 type Event struct {
-	ID           int            `db:"id" json:"id"`
-	ConferenceID int            `db:"conference_id" json:"conference_id"`
-	Name         string         `db:"name" json:"name"`
-	Description  string         `db:"description" json:"description"`
-	StartTime    string         `db:"start_time" json:"start_time"`
-	Length       int            `db:"length" json:"length"`
-	KeyEvent     bool           `db:"key_event" json:"key_event"`
-	LocationID   int            `db:"location_id" json:"location_id"`
-	ImageURL     sql.NullString `db:"image_url" json:"image_url"`
+	ID           int            `db:"id"`
+	ConferenceID int            `db:"conference_id"`
+	Name         string         `db:"name"`
+	Description  string         `db:"description"`
+	StartTime    string         `db:"start_time"`
+	Length       int            `db:"length"`
+	KeyEvent     bool           `db:"key_event"`
+	LocationID   int            `db:"location_id"`
+	ImageURL     sql.NullString `db:"image_url"`
 	//AttendeeCount int `db:"attendee_count" json:"attendee_count"` // TODO(jhobbs): Get this data from database after we have some RSVP data.
 	//Attendees []string `db:"attendees" json:"attendees"` // TODO(jhobbs): Get this data from the database after we have some RSVP data.
 	//Attending  bool          `db:"attending" json:"attending,omitempty"` // TODO(jhobbs): Get this data from database when listing events w/ RSVP status.
 }
 
 type EventOptions struct {
-	ConferenceID           int
 	ConvertTimeToUSPacific bool
 }
 
 func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
-	if options.ConferenceID == 0 {
-		return nil, errors.New("must provide conference id")
-	}
-
 	timeQuery := "start_time"
 	if options.ConvertTimeToUSPacific {
 		timeQuery = `DATE_FORMAT(CONVERT_TZ(start_time, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as start_time`
@@ -40,12 +35,12 @@ func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
 
 	// TODO(jhobbs): Join the Location table to provide full Location information.
 	query := `SELECT id, conference_id, name, description, ` + timeQuery + `, length, key_event, location_id, image_url
-FROM events WHERE conference_id = ?
+FROM events
 ORDER BY events.start_time asc
 `
 
 	var events []Event
-	if err := db.Select(&events, query, options.ConferenceID); err != nil {
+	if err := db.Select(&events, query); err != nil {
 		return events, fmt.Errorf("failed to list events: %w", err)
 	}
 	if events == nil {
