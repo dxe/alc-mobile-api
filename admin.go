@@ -12,13 +12,19 @@ import (
 )
 
 func (s *server) admin() {
-	s.renderTemplate("index", nil)
+	users, err := model.GetUserCount(s.db)
+	if err != nil {
+		s.adminError(err)
+		return
+	}
+	s.renderTemplate("index", users)
 }
 
 func (s *server) adminConferences() {
 	conferenceData, err := model.ListConferences(s.db, model.ConferenceOptions{ConvertTimeToUSPacific: true})
 	if err != nil {
-		panic(err)
+		s.adminError(err)
+		return
 	}
 	s.renderTemplate("conferences", conferenceData)
 }

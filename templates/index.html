@@ -3,10 +3,16 @@
 <section class="section">
   <div class="container">
     <h1 class="title">
-      Hello, {{ .UserEmail }}!
+      ALC Admin
     </h1>
     <p class="subtitle">
-      Please choose an option from the menu above.
+      Logged in as {{ .UserEmail }}.
+    </p>
+    <p>
+      Registered app users: {{.PageData.TotalUsers}}
+    </p>
+    <p>
+      Users registered for push notifications: {{.PageData.PushNotificationEnabledUsers}}
     </p>
   </div>
 </section>
