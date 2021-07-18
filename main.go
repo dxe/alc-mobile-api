@@ -217,7 +217,13 @@ func (s *server) renderTemplate(name string, pageData interface{}) {
 		DefaultConferenceID int
 	}
 
+	// TODO: Consider only doing getting this data on pages you need it.
+	// Alternatively, have a Conference selector on the nav bar that is reflected on all pages.
 	conferences, err := model.ListConferences(s.db, model.ConferenceOptions{})
+	if err != nil {
+		log.Println(err)
+		panic("failed to get conferences")
+	}
 
 	data := templateData{
 		UserEmail:           s.email,
