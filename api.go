@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/dxe/alc-mobile-api/model"
 )
 
@@ -51,7 +53,15 @@ func (a *api) serve(s *server) {
 	// request for each HTTP request.
 
 	var buf []byte
-	result, err := s.db.NamedQueryContext(s.r.Context(), a.query, queryArgs)
+	var result *sqlx.Rows
+	var err error
+
+	if queryArgs == nil {
+		result, err = s.db.QueryxContext(s.r.Context(), a.query)
+	} else {
+		result, err = s.db.NamedQueryContext(s.r.Context(), a.query, queryArgs)
+	}
+
 	if err != nil {
 		a.error(s, err)
 		return
