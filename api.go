@@ -131,19 +131,17 @@ select json_arrayagg(json_object(
   'end_date',   c.end_date
 ))
 from conferences c
-where c.id = :conference_id
 `,
-	args: func() interface{} {
-		return new(struct {
-			ConferenceID int `json:"conference_id" db:"conference_id"`
-		})
-	},
 }
 
 var apiEventList = api{
 	value: func() interface{} { return new([]model.Event) },
 	query: `
-select json_arrayagg(json_object(
+select json_object(
+
+'conference', (select json_object('id', id, 'name', name, 'start_date', start_date, 'end_date', end_date) from conferences where id = :conference_id),
+
+'events', json_arrayagg(json_object(
   'id',            e.id,
   'name',          e.name,
   'description',   e.description,
@@ -179,7 +177,7 @@ select json_arrayagg(json_object(
           else false
           end
   )
-))
+)))
 from events e
 join locations l on e.location_id = l.id
 where conference_id = :conference_id
