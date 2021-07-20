@@ -131,7 +131,13 @@ select json_arrayagg(json_object(
   'end_date',   c.end_date
 ))
 from conferences c
+where c.id = ?
 `,
+	args: func() interface{} {
+		return new(struct {
+			ConferenceID int `json:"conference_id" db:"conference_id"`
+		})
+	},
 }
 
 var apiEventList = api{
