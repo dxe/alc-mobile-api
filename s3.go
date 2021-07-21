@@ -35,7 +35,7 @@ func UploadFileToS3(s *session.Session, file []byte, name string) (string, error
 	region := *s.Config.Region
 
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
-	fileName := filepath.Base(name) + "." + timestamp + "." + filepath.Ext(name)
+	fileName := filepath.Base(name) + "." + timestamp + filepath.Ext(name)
 
 	_, err := s3.New(s).PutObject(&s3.PutObjectInput{
 		Bucket:             aws.String(bucket),
@@ -54,7 +54,7 @@ func UploadFileToS3(s *session.Session, file []byte, name string) (string, error
 }
 
 // ResizeJPG takes a multipart.File that is expected to be a jpg
-// and width to resize it to in pixels.
+// and the width to resize it to in pixels.
 // It returns a []byte containing a resized version of the file
 // or an error.
 func ResizeJPG(file multipart.File, maxWidth uint) ([]byte, error) {
