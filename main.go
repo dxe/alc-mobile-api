@@ -119,6 +119,11 @@ func main() {
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 			s := newServer(w, r)
 
+			if r.URL.Path != path {
+				http.NotFound(w, r)
+				return
+			}
+
 			email, err := s.googleEmail()
 			if err != nil {
 				s.redirect(absURL("/login"))
