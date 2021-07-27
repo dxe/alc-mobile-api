@@ -222,7 +222,7 @@ values (:conference_id, :name, :email, :device_id, :device_name, :platform, now(
 	},
 }
 
-var apiUserRSVP = api{
+var apiEventRSVP = api{
 	query: `
 replace into rsvp (event_id, user_id, attending, timestamp)
 values (:event_id, (SELECT id FROM users WHERE device_id = :device_id), :attending, now())

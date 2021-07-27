@@ -179,7 +179,7 @@ func main() {
 	handle("/api/announcement/list", apiAnnouncementList.serve)
 	handle("/api/conference/list", apiConferenceList.serve)
 	handle("/api/event/list", apiEventList.serve)
-	handle("/api/event/rsvp", apiUserRSVP.serve)
+	handle("/api/event/rsvp", apiEventRSVP.serve)
 	handle("/api/info/list", apiInfoList.serve)
 	handle("/api/user/add", apiUserAdd.serve)
 	handle("/api/user/register_push_notifications", apiUserRegisterPushNotifications.serve)
