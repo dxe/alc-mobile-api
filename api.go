@@ -172,7 +172,7 @@ select json_object(
 		case when(
 			select attending
 			from rsvp rsvpStatus
-			where rsvpStatus.event_id = e.id and rsvpStatus.user_id = (SELECT id FROM users WHERE device_id = :device_id)
+			where rsvpStatus.event_id = e.id and rsvpStatus.user_id = (SELECT max(id) FROM users WHERE device_id = :device_id)
 		) then true
           else false
           end
