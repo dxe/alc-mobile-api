@@ -172,7 +172,7 @@ select json_object(
 		case when(
 			select attending
 			from rsvp rsvpStatus
-			where rsvpStatus.event_id = e.id and rsvpStatus.user_id = :user_id
+			where rsvpStatus.event_id = e.id and rsvpStatus.user_id = (SELECT id FROM users WHERE device_id = :device_id)
 		) then true
           else false
           end
@@ -185,7 +185,7 @@ where conference_id = :conference_id
 	args: func() interface{} {
 		return new(struct {
 			ConferenceID int `json:"conference_id" db:"conference_id"`
-			UserID       int `json:"user_id" db:"user_id"`
+			DeviceID     int `json:"device_id" db:"device_id"`
 		})
 	},
 }
