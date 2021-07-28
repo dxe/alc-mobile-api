@@ -184,8 +184,8 @@ where conference_id = :conference_id
 `,
 	args: func() interface{} {
 		return new(struct {
-			ConferenceID int `json:"conference_id" db:"conference_id"`
-			DeviceID     int `json:"device_id" db:"device_id"`
+			ConferenceID int    `json:"conference_id" db:"conference_id"`
+			DeviceID     string `json:"device_id" db:"device_id"`
 		})
 	},
 }
