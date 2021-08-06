@@ -209,6 +209,7 @@ var apiUserAdd = api{
 	query: `
 insert into users (conference_id, name, email, device_id, device_name, platform, timestamp)
 values (:conference_id, :name, :email, :device_id, :device_name, :platform, now())
+on duplicate key update conference_id = VALUES(conference_id), name = VALUES(name), email = VALUES(email)
 `,
 	args: func() interface{} {
 		return new(struct {

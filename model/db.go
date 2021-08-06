@@ -67,7 +67,8 @@ CREATE TABLE IF NOT EXISTS users (
     platform VARCHAR(60),
     timestamp TIMESTAMP NOT NULL,
     expo_push_token VARCHAR(60) DEFAULT NULL,
-    FOREIGN KEY (conference_id) REFERENCES conferences(id)
+    FOREIGN KEY (conference_id) REFERENCES conferences(id),
+    UNIQUE (device_id)
 )
 `)
 
