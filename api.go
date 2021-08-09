@@ -163,7 +163,7 @@ select json_object(
 		where rsvpTotal.event_id = e.id and rsvpTotal.attending
   ),
   'attendees', (
-		select json_arrayagg(json_object('name', users.name))
+		select if(count(*) = 0, json_array(), (json_arrayagg(json_object('name', users.name))))
 		from rsvp rsvpList
 		join users on rsvpList.user_id = users.id
 		where rsvpList.event_id = e.id and rsvpList.attending
