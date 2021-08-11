@@ -14,7 +14,11 @@ import (
 func NotificationsWorker(db *sqlx.DB) {
 	log.Println("Notifications Worker started.")
 
-	tx := db.MustBegin()
+	tx, err := db.Beginx()
+	if err != nil {
+		log.Println("Failed to begin database transaction.")
+		return
+	}
 
 	notifications, err := model.SelectNotificationsToSend(tx)
 	if err != nil {
@@ -51,15 +55,18 @@ func NotificationsWorker(db *sqlx.DB) {
 			UserID:         notifications[i].UserID,
 			AnnouncementID: notifications[i].AnnouncementID,
 			Status:         r.Status,
+			Receipt:        r.ID,
 		})
 		if err != nil {
+			// There is no point in rolling back at this point, because the push notifications
+			// have already been sent to Expo's API. Just log the error & continue.
 			log.Println(err.Error())
-			tx.Rollback()
-			return
 		}
 		if r.Details["error"] == expo.ErrorDeviceNotRegistered {
 			if err := model.RemovePushToken(tx, notifications[i].UserID); err != nil {
-				// It's non-breaking if this fails, so just log & continue.
+				// If removing the token fails, log the error & continue. Next time a push
+				// notification is attempted to be sent, it should make another attempt
+				// to remove the token if the same error is encountered.
 				log.Println(err)
 			}
 		}

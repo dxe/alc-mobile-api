@@ -1,6 +1,10 @@
 package expo
 
-// Adapted from https://github.com/oliveroneill/exponent-server-sdk-golang
+// Adapted from https://github.com/oliveroneill/exponent-server-sdk-golang.
+// We aren't using that package directly because it does not support the
+// use of Expo Access Tokens or handling the Receipt ID. There are already
+// PR's open for these issues, but it seems like the package is no longer
+// maintained.
 
 import (
 	"bytes"
@@ -24,6 +28,7 @@ type Response struct {
 
 type PushResponse struct {
 	PushMessage PushMessage
+	ID          string            `json:"id"` // receipt
 	Status      string            `json:"status"`
 	Message     string            `json:"message"`
 	Details     map[string]string `json:"details"`

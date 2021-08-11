@@ -12,6 +12,7 @@ type Notification struct {
 	UserID         int    `db:"user_id"`
 	AnnouncementID int    `db:"announcement_id"`
 	Status         string `db:"status"`
+	Receipt        string `db:"receipt"`
 	// From joined tables.
 	ExpoPushToken string `db:"expo_push_token"`
 	Title         string `db:"title"`
@@ -84,7 +85,7 @@ FOR UPDATE SKIP LOCKED
 
 func UpdateNotificationStatus(tx *sqlx.Tx, notification Notification) error {
 	query := `UPDATE notifications
-	   SET status = :status
+	   SET status = :status, receipt = :receipt
 	   WHERE user_id = :user_id and announcement_id = :announcement_id`
 	_, err := tx.NamedExec(query, notification)
 	if err != nil {
