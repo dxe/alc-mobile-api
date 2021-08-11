@@ -72,9 +72,9 @@ func main() {
 	// TODO: Consider not doing this each time the application loads.
 	// It may be better to do it via a script instead.
 	if !*flagProd {
-		//model.WipeDatabase(db, *flagProd)
-		//model.InitDatabase(db)
-		//model.InsertMockData(db, *flagProd)
+		model.WipeDatabase(db, *flagProd)
+		model.InitDatabase(db)
+		model.InsertMockData(db, *flagProd)
 	}
 
 	clientID := config("OAUTH_CLIENT_ID")
