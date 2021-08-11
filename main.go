@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/coreos/go-oidc"
@@ -186,6 +187,32 @@ func main() {
 
 	// Static file server
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+
+	// Start go routines for queueing and sending notifications.
+	go func() {
+		for {
+			model.EnqueueAnnouncementNotifications(db)
+			time.Sleep(1 * time.Minute)
+		}
+	}()
+	// Every 15 seconds, check for rows in Notifications table that have the "queued" status. Select them in blocks of
+	// 100 to submit to Expo. (Create transaction to prevent multiple workers from selecting the same ones? SELECT FOR
+	// UPDATE?) Then change the status & add receipt once successfully queued w/ Expo server.
+	go func() {
+		for {
+			SendNotificationsWorker(db)
+			time.Sleep(15 * time.Second)
+		}
+	}()
+	// Every 15 min, check receipt status w/ Expo for all messages that do not yet have a final receipt status. Remove
+	// tokens from users who have DeviceNotRegistered receipt status.
+	go func() {
+		for {
+			// TODO
+			//NotificationReceiptWorker(db)
+			time.Sleep(15 * time.Minute)
+		}
+	}()
 
 	log.Println("Server started. Listening on port 8080.")
 	server := &http.Server{Addr: ":8080", Handler: mux}
