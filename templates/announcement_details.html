@@ -27,14 +27,14 @@
       <div class="field">
         <label class="label">Title</label>
         <div class="control">
-          <input class="input" type="text" name="Title" value="{{.PageData.Title}}" required>
+          <input class="input" type="text" name="Title" value="{{.PageData.Title}}" maxlength="65" required>
         </div>
       </div>
 
       <div class="field">
         <label class="label">Message</label>
         <div class="control">
-          <textarea class="textarea" name="Message" rows="4" required>{{.PageData.Message}}</textarea>
+          <textarea class="textarea" name="Message" rows="4" maxlength="240" required>{{.PageData.Message}}</textarea>
         </div>
       </div>
 
