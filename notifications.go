@@ -1,151 +1,26 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
+	"fmt"
 	"log"
-	"net/http"
-	"os"
-	"strconv"
+
+	"github.com/dxe/alc-mobile-api/expo"
 
 	"github.com/dxe/alc-mobile-api/model"
 
 	"github.com/jmoiron/sqlx"
 )
 
-type ExpoNotification struct {
-	UserID         int    `db:"user_id" json:"-"`
-	AnnouncementID int    `db:"announcement_id" json:"-"`
-	To             string `json:"to"`
-	Title          string `json:"title"`
-	Body           string `json:"body"`
-}
+func NotificationsWorker(db *sqlx.DB) {
+	log.Println("Notifications Worker started.")
 
-type ExpoTickets struct {
-	Data []struct {
-		Status  string   // error or ok
-		ID      string   // receipt id
-		Message string   // error message
-		Details struct { // error details
-			Error string // DeviceNotRegistered
-		}
-	}
-	Errors []struct {
-		Code    string
-		Message string
-	}
-}
-
-func SendNotifications(notifications []ExpoNotification) ExpoTickets {
-	path := "https://exp.host/--/api/v2/push/send"
-
-	var reqBody bytes.Buffer
-	err := json.NewEncoder(&reqBody).Encode(notifications)
-	if err != nil {
-		panic(err)
-	}
-
-	req, err := http.NewRequest("POST", path, &reqBody)
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("EXPO_PUSH_ACCESS_TOKEN"))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	var respBody ExpoTickets
-	err = json.NewDecoder(resp.Body).Decode(&respBody)
-	if err != nil {
-		panic(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		log.Println(respBody.Errors[0].Message)
-		panic(errors.New("Expo returned status code " + strconv.Itoa(resp.StatusCode)))
-	}
-
-	return respBody
-}
-
-type ExpoReceipts struct {
-	Data map[string]struct {
-		Status  string   // error or ok
-		Message string   // error message
-		Details struct { // error details
-			Error string // DeviceNotRegistered, MessageTooBig, MessageRateExceeded
-		}
-	}
-	Errors []struct {
-		Code    string
-		Message string // PUSH_TOO_MANY_EXPERIENCE_IDS, PUSH_TOO_MANY_NOTIFICATIONS, PUSH_TOO_MANY_RECEIPTS
-	}
-}
-
-func GetNotificationReceiptStatus(IDs []string) ExpoReceipts {
-	path := "https://exp.host/--/api/v2/push/getReceipts"
-
-	var reqBody bytes.Buffer
-	err := json.NewEncoder(&reqBody).Encode(struct{ ids []string }{ids: IDs})
-	if err != nil {
-		panic(err)
-	}
-
-	req, err := http.NewRequest("POST", path, &reqBody)
-	if err != nil {
-		panic(err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("EXPO_PUSH_ACCESS_TOKEN"))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	defer resp.Body.Close()
-
-	var respBody ExpoReceipts
-	err = json.NewDecoder(resp.Body).Decode(&respBody)
-	if err != nil {
-		panic(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		log.Println(respBody.Errors[0].Message)
-		panic(errors.New("Expo returned status code " + strconv.Itoa(resp.StatusCode)))
-	}
-
-	return respBody
-}
-
-func SendNotificationsWorker(db *sqlx.DB) {
-	log.Println("Started SendNotifications worker.")
-	// select 100 for update
 	tx := db.MustBegin()
 
-	query := `
-SELECT notifications.user_id, notifications.announcement_id, expo_push_token as "to", announcements.title as title, announcements.message as body
-FROM notifications
-JOIN users ON users.id = notifications.user_id
-JOIN announcements on announcements.id = notifications.announcement_id
-WHERE notifications.status = "queued"
-LIMIT 100
-FOR UPDATE SKIP LOCKED
-`
-
-	var notifications []ExpoNotification
-	if err := tx.Select(&notifications, query); err != nil {
+	notifications, err := model.SelectNotificationsToSend(tx)
+	if err != nil {
+		log.Printf(err.Error())
 		tx.Rollback()
-		panic(err)
+		return
 	}
 
 	if len(notifications) == 0 {
@@ -154,35 +29,47 @@ FOR UPDATE SKIP LOCKED
 		return
 	}
 
-	// send to expo api
-	tickets := SendNotifications(notifications)
-
-	// update 100 w/ ticket numbers
-	var updatedNotifications []model.Notification
-	for i, notification := range notifications {
-		updatedNotifications = append(updatedNotifications, model.Notification{
-			UserID:         notification.UserID,
-			AnnouncementID: notification.AnnouncementID,
-			Status:         tickets.Data[i].Status,
-			Receipt:        tickets.Data[i].ID,
-		})
-	}
-
-	// Unfortunately there doesn't seem to be a good way to do this in one batch.
-	for _, n := range updatedNotifications {
-		query := `UPDATE notifications
-	   SET status = :status, receipt = :receipt
-	   WHERE user_id = :user_id and announcement_id = :announcement_id`
-		_, err := tx.NamedExec(query, n)
-		if err != nil {
-			panic(err)
+	expoMessages := make([]expo.PushMessage, len(notifications))
+	for i, n := range notifications {
+		expoMessages[i] = expo.PushMessage{
+			To:    n.ExpoPushToken,
+			Title: n.Title,
+			Body:  n.Body,
 		}
 	}
 
-	err := tx.Commit()
+	expoResponses, err := expo.PublishMessages(expoMessages)
 	if err != nil {
+		log.Println(err.Error())
 		tx.Rollback()
-		panic(err)
+		return
 	}
-	log.Println("Finished SendNotifications worker.")
+
+	for i, r := range expoResponses {
+		fmt.Printf("%+v\n", r)
+		err := model.UpdateNotificationStatus(tx, model.Notification{
+			UserID:         notifications[i].UserID,
+			AnnouncementID: notifications[i].AnnouncementID,
+			Status:         r.Status,
+		})
+		if err != nil {
+			log.Println(err.Error())
+			tx.Rollback()
+			return
+		}
+		if r.Details["error"] == expo.ErrorDeviceNotRegistered {
+			if err := model.RemovePushToken(tx, notifications[i].UserID); err != nil {
+				// It's non-breaking if this fails, so just log & continue.
+				log.Println(err)
+			}
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		fmt.Println("Failed to commit transaction.")
+		tx.Rollback()
+		return
+	}
+	log.Println("Notifications Worker finished.")
 }

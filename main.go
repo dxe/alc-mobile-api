@@ -72,9 +72,9 @@ func main() {
 	// TODO: Consider not doing this each time the application loads.
 	// It may be better to do it via a script instead.
 	if !*flagProd {
-		model.WipeDatabase(db, *flagProd)
-		model.InitDatabase(db)
-		model.InsertMockData(db, *flagProd)
+		//model.WipeDatabase(db, *flagProd)
+		//model.InitDatabase(db)
+		//model.InsertMockData(db, *flagProd)
 	}
 
 	clientID := config("OAUTH_CLIENT_ID")
@@ -195,22 +195,10 @@ func main() {
 			time.Sleep(1 * time.Minute)
 		}
 	}()
-	// Every 15 seconds, check for rows in Notifications table that have the "queued" status. Select them in blocks of
-	// 100 to submit to Expo. (Create transaction to prevent multiple workers from selecting the same ones? SELECT FOR
-	// UPDATE?) Then change the status & add receipt once successfully queued w/ Expo server.
 	go func() {
 		for {
-			SendNotificationsWorker(db)
+			NotificationsWorker(db)
 			time.Sleep(15 * time.Second)
-		}
-	}()
-	// Every 15 min, check receipt status w/ Expo for all messages that do not yet have a final receipt status. Remove
-	// tokens from users who have DeviceNotRegistered receipt status.
-	go func() {
-		for {
-			// TODO
-			//NotificationReceiptWorker(db)
-			time.Sleep(15 * time.Minute)
 		}
 	}()
 

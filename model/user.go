@@ -1,6 +1,10 @@
 package model
 
-import "github.com/jmoiron/sqlx"
+import (
+	"fmt"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type User struct {
 	ID            int    `db:"id"`
@@ -31,4 +35,16 @@ select
 		return 0, err
 	}
 	return results[0], nil
+}
+
+func RemovePushToken(tx *sqlx.Tx, userID int) error {
+	query := `UPDATE users
+SET expo_push_token = null
+WHERE id = ?
+`
+	_, err := tx.Exec(query, userID)
+	if err != nil {
+		return fmt.Errorf("failed to remove push token from user id %d: %w", userID, err)
+	}
+	return nil
 }
