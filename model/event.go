@@ -75,7 +75,7 @@ func SaveEvent(db *sqlx.DB, event Event) error {
 func insertEvent(db *sqlx.DB, event Event) error {
 	query := `
 INSERT INTO events (conference_id, name, description, start_time, length, key_event, location_id, image_url)
-VALUES (:conference_id, :name, :description, :start_time, :length, :key_event, :location_id, :image_url)
+VALUES (:conference_id, TRIM(:name), TRIM(:description), :start_time, :length, :key_event, :location_id, :image_url)
 `
 	if _, err := db.NamedExec(query, event); err != nil {
 		return fmt.Errorf("failed to insert event: %w", err)
@@ -86,7 +86,7 @@ VALUES (:conference_id, :name, :description, :start_time, :length, :key_event, :
 func updateEvent(db *sqlx.DB, event Event) error {
 	query := `
 UPDATE events
-SET conference_id = :conference_id, name = :name, description = :description, start_time = :start_time, length = :length,
+SET conference_id = :conference_id, name = TRIM(:name), description = TRIM(:description), start_time = :start_time, length = :length,
     key_event = :key_event, location_id = :location_id, image_url = :image_url
 WHERE id = :id
 `

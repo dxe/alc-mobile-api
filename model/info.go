@@ -54,7 +54,7 @@ func SaveInfo(db *sqlx.DB, info Info) error {
 func insertInfo(db *sqlx.DB, info Info) error {
 	query := `
 INSERT INTO info (title, subtitle, content, icon, display_order)
-VALUES (:title, :subtitle, :content, :icon, :display_order)
+VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order)
 `
 	if _, err := db.NamedExec(query, info); err != nil {
 		return fmt.Errorf("failed to insert info: %w", err)
@@ -65,7 +65,7 @@ VALUES (:title, :subtitle, :content, :icon, :display_order)
 func updateInfo(db *sqlx.DB, info Info) error {
 	query := `
 UPDATE info
-SET title = :title, subtitle = :subtitle, content = :content, icon = :icon, display_order = :display_order
+SET title = TRIM(:title), subtitle = TRIM(:subtitle), content = TRIM(:content), icon = :icon, display_order = :display_order
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, info); err != nil {

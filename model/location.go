@@ -59,7 +59,7 @@ func SaveLocation(db *sqlx.DB, location Location) error {
 func insertLocation(db *sqlx.DB, location Location) error {
 	query := `
 INSERT INTO locations (name, place_id, address, city, lat, lng)
-VALUES (:name, :place_id, :address, :city, :lat, :lng)
+VALUES (TRIM(:name), TRIM(:place_id), TRIM(:address), TRIM(:city), :lat, :lng)
 `
 	if _, err := db.NamedExec(query, location); err != nil {
 		return fmt.Errorf("failed to insert location: %w", err)
@@ -70,7 +70,7 @@ VALUES (:name, :place_id, :address, :city, :lat, :lng)
 func updateLocation(db *sqlx.DB, location Location) error {
 	query := `
 UPDATE locations
-SET name = :name, place_id = :place_id, address = :address, city = :city, lat = :lat, lng = :lng
+SET name = TRIM(:name), place_id = TRIM(:place_id), address = TRIM(:address), city = TRIM(:city), lat = :lat, lng = :lng
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, location); err != nil {

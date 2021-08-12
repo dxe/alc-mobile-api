@@ -63,7 +63,7 @@ func SaveConference(db *sqlx.DB, conference Conference) error {
 }
 
 func insertConference(db *sqlx.DB, conference Conference) error {
-	query := "INSERT INTO conferences (name, start_date, end_date) VALUES (:name, :start_date, :end_date)"
+	query := "INSERT INTO conferences (name, start_date, end_date) VALUES (TRIM(:name), :start_date, :end_date)"
 	if _, err := db.NamedExec(query, conference); err != nil {
 		return fmt.Errorf("failed to insert conference: %w", err)
 	}
@@ -71,7 +71,7 @@ func insertConference(db *sqlx.DB, conference Conference) error {
 }
 
 func updateConference(db *sqlx.DB, conference Conference) error {
-	query := "UPDATE conferences SET name = :name, start_date = :start_date, end_date = :end_date WHERE id = :id"
+	query := "UPDATE conferences SET name = TRIM(:name), start_date = :start_date, end_date = :end_date WHERE id = :id"
 	if _, err := db.NamedExec(query, conference); err != nil {
 		return fmt.Errorf("failed to update conference: %w", err)
 	}

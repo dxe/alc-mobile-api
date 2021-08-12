@@ -77,7 +77,7 @@ func insertAnnouncement(db *sqlx.DB, announcement Announcement) error {
 	log.Println("inserting!")
 	query := `
 INSERT INTO announcements (conference_id, title, message, icon, created_by, send_time)
-VALUES (:conference_id, :title, :message, :icon, :created_by, :send_time)
+VALUES (:conference_id, TRIM(:title), TRIM(:message), :icon, :created_by, :send_time)
 `
 	if _, err := db.NamedExec(query, announcement); err != nil {
 		return fmt.Errorf("failed to insert announcement: %w", err)
@@ -88,7 +88,7 @@ VALUES (:conference_id, :title, :message, :icon, :created_by, :send_time)
 func updateAnnouncement(db *sqlx.DB, announcement Announcement) error {
 	query := `
 UPDATE announcements
-SET conference_id = :conference_id, title = :title, message = :message, icon = :icon, created_by = :created_by, send_time = :send_time
+SET conference_id = :conference_id, title = TRIM(:title), message = TRIM(:message), icon = :icon, created_by = :created_by, send_time = :send_time
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, announcement); err != nil {
