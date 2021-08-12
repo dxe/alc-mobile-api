@@ -113,6 +113,7 @@ select json_arrayagg(json_object(
 from announcements a
 where a.sent
   and a.conference_id = :conference_id
+order by send_time desc
 `,
 	args: func() interface{} {
 		return new(struct {
@@ -131,6 +132,7 @@ select json_arrayagg(json_object(
   'end_date',   c.end_date
 ))
 from conferences c
+order by start_date desc
 `,
 }
 
@@ -181,6 +183,7 @@ select json_object(
 from events e
 join locations l on e.location_id = l.id
 where conference_id = :conference_id
+order by e.start_time asc
 `,
 	args: func() interface{} {
 		return new(struct {
@@ -202,6 +205,7 @@ select json_arrayagg(json_object(
   'display_order', i.display_order
 ))
 from info i
+order by i.display_order
 `,
 }
 
