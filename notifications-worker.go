@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
+	expo "github.com/darnfish/exponent-server-sdk-golang/sdk"
 	"github.com/dxe/alc-mobile-api/model"
 	"github.com/jmoiron/sqlx"
-	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
 func NotificationsWorker(db *sqlx.DB) {
@@ -44,7 +45,7 @@ func NotificationsWorker(db *sqlx.DB) {
 		}
 	}
 
-	client := expo.NewPushClient(nil)
+	client := expo.NewPushClient(&expo.ClientConfig{AccessToken: os.Getenv("EXPO_PUSH_ACCESS_TOKEN")})
 
 	expoResponses, err := client.PublishMultiple(expoMessages)
 	if err != nil {
