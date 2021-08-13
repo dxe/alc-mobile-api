@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 
-	expo "github.com/darnfish/exponent-server-sdk-golang/sdk"
 	"github.com/dxe/alc-mobile-api/model"
 	"github.com/jmoiron/sqlx"
+	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
 func NotificationsWorker(db *sqlx.DB) {
