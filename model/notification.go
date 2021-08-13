@@ -26,12 +26,11 @@ func EnqueueAnnouncementNotifications(db *sqlx.DB) {
 
 	insertQuery := `
 INSERT IGNORE into notifications (user_id, announcement_id, status)
-
-SELECT users.id as user_id, announcements.id as announcement_id, "queued" as status
-FROM announcements
-JOIN users ON users.conference_id = announcements.conference_id
-WHERE sent = 0 AND send_time <= NOW() AND expo_push_token is not null
-ORDER BY send_time asc
+	SELECT users.id as user_id, announcements.id as announcement_id, "queued" as status
+	FROM announcements
+	JOIN users ON users.conference_id = announcements.conference_id
+	WHERE sent = 0 AND send_time <= NOW() AND expo_push_token is not null
+	ORDER BY send_time asc
 `
 	results := tx.MustExec(insertQuery)
 	notificationRows, err := results.RowsAffected()
