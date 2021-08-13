@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/dxe/alc-mobile-api/expo"
-
 	"github.com/dxe/alc-mobile-api/model"
-
 	"github.com/jmoiron/sqlx"
+	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
 func NotificationsWorker(db *sqlx.DB) {
@@ -35,14 +33,20 @@ func NotificationsWorker(db *sqlx.DB) {
 
 	expoMessages := make([]expo.PushMessage, len(notifications))
 	for i, n := range notifications {
+		pushToken, err := expo.NewExponentPushToken(n.ExpoPushToken)
+		if err != nil {
+			log.Printf("User %v has invalid push token.", n.UserID)
+		}
 		expoMessages[i] = expo.PushMessage{
-			To:    n.ExpoPushToken,
+			To:    []expo.ExponentPushToken{pushToken},
 			Title: n.Title,
 			Body:  n.Body,
 		}
 	}
 
-	expoResponses, err := expo.PublishMessages(expoMessages)
+	client := expo.NewPushClient(nil)
+
+	expoResponses, err := client.PublishMultiple(expoMessages)
 	if err != nil {
 		log.Println(err.Error())
 		tx.Rollback()
@@ -55,7 +59,6 @@ func NotificationsWorker(db *sqlx.DB) {
 			UserID:         notifications[i].UserID,
 			AnnouncementID: notifications[i].AnnouncementID,
 			Status:         r.Status,
-			Receipt:        r.ID,
 		})
 		if err != nil {
 			// There is no point in rolling back at this point, because the push notifications
@@ -75,7 +78,6 @@ func NotificationsWorker(db *sqlx.DB) {
 	err = tx.Commit()
 	if err != nil {
 		fmt.Println("Failed to commit transaction.")
-		tx.Rollback()
 		return
 	}
 	log.Println("Notifications Worker finished.")

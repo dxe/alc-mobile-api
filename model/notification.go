@@ -85,7 +85,7 @@ FOR UPDATE SKIP LOCKED
 
 func UpdateNotificationStatus(tx *sqlx.Tx, notification Notification) error {
 	query := `UPDATE notifications
-	   SET status = :status, receipt = :receipt
+	   SET status = :status
 	   WHERE user_id = :user_id and announcement_id = :announcement_id`
 	_, err := tx.NamedExec(query, notification)
 	if err != nil {
