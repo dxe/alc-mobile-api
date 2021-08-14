@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 
+	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
+
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/coreos/go-oidc"
 	"github.com/dxe/alc-mobile-api/model"
@@ -94,11 +96,14 @@ func main() {
 		log.Fatalf("failed to create AWS session: %v", err)
 	}
 
+	expoPushClient := expo.NewPushClient(&expo.ClientConfig{AccessToken: os.Getenv("EXPO_PUSH_ACCESS_TOKEN")})
+
 	newServer := func(w http.ResponseWriter, r *http.Request) *server {
 		return &server{
-			conf:       conf,
-			verifier:   verifier,
-			awsSession: awsSession,
+			conf:           conf,
+			verifier:       verifier,
+			awsSession:     awsSession,
+			expoPushClient: expoPushClient,
 
 			db: db,
 			w:  w,
@@ -195,12 +200,7 @@ func main() {
 			time.Sleep(1 * time.Minute)
 		}
 	}()
-	go func() {
-		for {
-			NotificationsWorker(db)
-			time.Sleep(15 * time.Second)
-		}
-	}()
+	go NotificationsWorkerWrapper(db, expoPushClient)
 
 	log.Println("Server started. Listening on port 8080.")
 	server := &http.Server{Addr: ":8080", Handler: mux}
@@ -208,9 +208,10 @@ func main() {
 }
 
 type server struct {
-	conf       *oauth2.Config
-	verifier   *oidc.IDTokenVerifier
-	awsSession *session.Session
+	conf           *oauth2.Config
+	verifier       *oidc.IDTokenVerifier
+	awsSession     *session.Session
+	expoPushClient *expo.PushClient
 
 	email string
 

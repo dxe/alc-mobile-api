@@ -2,6 +2,7 @@ package model
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -44,6 +45,18 @@ func ping(ctx context.Context, db *sqlx.DB, deadline time.Time) {
 
 		time.Sleep(time.Second) // pause before trying again
 	}
+}
+
+func transact(db *sqlx.DB, do func(tx *sqlx.Tx) error) error {
+	tx, err := db.Beginx()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	if err := do(tx); err != nil {
+		tx.Rollback()
+		return err
+	}
+	return tx.Commit()
 }
 
 func InitDatabase(db *sqlx.DB) {
@@ -142,6 +155,7 @@ CREATE TABLE IF NOT EXISTS notifications (
 	user_id INTEGER,
 	announcement_id INTEGER,
 	status VARCHAR(60),
+    lease_expiration BIGINT NOT NULL DEFAULT 0,
     receipt VARCHAR(60),
     receipt_status VARCHAR(60),
     timestamp TIMESTAMP DEFAULT NOW(),
