@@ -1,8 +1,6 @@
 package model
 
 import (
-	"log"
-
 	"github.com/jmoiron/sqlx"
 )
 
@@ -37,22 +35,25 @@ select
 	return results[0], nil
 }
 
-func RemovePushToken(db *sqlx.DB, userID int) {
-	query := `UPDATE users
-SET expo_push_token = null
-WHERE id = ?
-`
-	_, err := db.Exec(query, userID)
-	if err != nil {
-		log.Printf("failed to remove push token from user id %d: %v", userID, err.Error())
+func RemovePushTokens(db *sqlx.DB, userIDs []int) error {
+	if len(userIDs) == 0 {
+		return nil
 	}
 
-	query = `UPDATE notifications
-SET status = "DeviceNotRegistered"
-WHERE user_id = ?
+	query := `UPDATE users
+SET expo_push_token = null
+WHERE id in (?)
 `
-	_, err = db.Exec(query, userID)
+
+	query, args, err := sqlx.In(query, userIDs)
 	if err != nil {
-		log.Printf("failed update notification status for user id %d: %v", userID, err.Error())
+		return err
 	}
+
+	_, err = db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

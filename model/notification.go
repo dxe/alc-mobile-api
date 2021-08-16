@@ -23,11 +23,11 @@ type Notification struct {
 	Body          string `db:"body"`
 }
 
-func EnqueueAnnouncementNotifications(db *sqlx.DB) {
-	log.Println("Starting to enqueue announcement notifications.")
-
-	err := transact(db, func(tx *sqlx.Tx) error {
-		insertQuery := `
+func EnqueueAnnouncementNotifications(db *sqlx.DB) error {
+	// Inserts unsent announcements into the notifications table.
+	// INSERT IGNORE is used so that it can run again if
+	// it is interrupted without causing any unintended side effects.
+	insertQuery := `
 INSERT IGNORE into notifications (user_id, announcement_id, status)
 	SELECT users.id as user_id, announcements.id as announcement_id, "Queued" as status
 	FROM announcements
@@ -35,40 +35,32 @@ INSERT IGNORE into notifications (user_id, announcement_id, status)
 	WHERE sent = 0 AND send_time <= NOW() AND expo_push_token like "ExponentPushToken[%]"
 	ORDER BY send_time asc
 `
-		results := tx.MustExec(insertQuery)
-		notificationRows, err := results.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("failed to insert into notifications table: %w", err)
-		}
+	results, err := db.Exec(insertQuery)
+	if err != nil {
+		return fmt.Errorf("failed to insert notifications: %w", err)
+	}
+	notificationRows, err := results.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get number of notifications inserted: %w", err)
+	}
+	log.Printf("Enqueued %d notifications.\n", notificationRows)
 
-		updateQuery := `
+	// Mark the announcement as "sent" in the announcements table.
+	updateQuery := `
 UPDATE announcements
 SET sent = 1
 WHERE id in (SELECT DISTINCT announcement_id FROM notifications) AND sent = 0
 `
-		results = tx.MustExec(updateQuery)
-		announcementRows, err := results.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("failed to update announcements table: %w", err)
-		}
-
-		log.Printf("Enqueued %d notifications for %d announcements.\n", notificationRows, announcementRows)
-
-		return nil
-	})
-
+	results, err = db.Exec(updateQuery)
 	if err != nil {
-		log.Println("Failed to enqueue announcement notifications.")
-		return
+		return fmt.Errorf("failed to mark announcement as sent: %w", err)
 	}
 
+	return nil
 }
 
-func SelectNotificationsToSend(db *sqlx.DB) ([]Notification, error) {
+func SelectNotificationsToSend(db *sqlx.DB, now, deadline time.Time) ([]Notification, error) {
 	var notifications []Notification
-
-	currentTime := time.Now().Unix()
-	fiveMinFromNow := time.Now().Add(5 * time.Minute).Unix()
 
 	err := transact(db, func(tx *sqlx.Tx) error {
 		selectQuery := `
@@ -90,7 +82,7 @@ func SelectNotificationsToSend(db *sqlx.DB) ([]Notification, error) {
 			FOR UPDATE SKIP LOCKED
 		`
 
-		if err := tx.Select(&notifications, selectQuery, currentTime); err != nil {
+		if err := tx.Select(&notifications, selectQuery, now.Unix()); err != nil {
 			return fmt.Errorf("select query failed: %w", err)
 		}
 
@@ -107,7 +99,7 @@ func SelectNotificationsToSend(db *sqlx.DB) ([]Notification, error) {
 			UPDATE notifications
 				SET
 					status = "Leased",
-    				lease_expiration = ` + strconv.FormatInt(fiveMinFromNow, 10) + `
+    				lease_expiration = ` + strconv.FormatInt(deadline.Unix(), 10) + `
 			WHERE CONCAT(user_id,"-",announcement_id) IN (?)
 		`
 
@@ -142,5 +134,6 @@ ON DUPLICATE KEY UPDATE status=VALUES(status)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }

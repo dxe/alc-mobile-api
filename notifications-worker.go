@@ -34,8 +34,11 @@ const (
 	StatusUnknownError        = "UnknownError"
 )
 
-func notificationsWorker(db *sqlx.DB, client *expo.PushClient) (err error) {
-	notifications, err := model.SelectNotificationsToSend(db)
+func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
+	currentTime := time.Now()
+	fiveMinFromNow := time.Now().Add(5 * time.Minute)
+
+	notifications, err := model.SelectNotificationsToSend(db, currentTime, fiveMinFromNow)
 	if err != nil {
 		return err
 	}
@@ -52,18 +55,22 @@ func notificationsWorker(db *sqlx.DB, client *expo.PushClient) (err error) {
 		return fmt.Errorf("failed to publish messages via expo api: %w", err)
 	}
 
+	// Create a slice to store IDs of unregistered users to use to update
+	// the database without having to iterate through all of the notifications
+	// an extra time.
+	var unregisteredUsers []int
+
 	// Update each notification with the status.
 	for i, r := range expoResponses {
-		if r.Status == expo.SuccessStatus {
+		switch {
+		case r.Status == expo.SuccessStatus:
 			validNotifications[i].Status = StatusSent
-			continue
-		}
-		if r.Details["error"] == expo.ErrorDeviceNotRegistered {
+		case r.Details["error"] == expo.ErrorDeviceNotRegistered:
 			validNotifications[i].Status = StatusDeviceNotRegistered
-			model.RemovePushToken(db, validNotifications[i].UserID)
-			continue
+			unregisteredUsers = append(unregisteredUsers, validNotifications[i].UserID)
+		default:
+			validNotifications[i].Status = StatusUnknownError
 		}
-		validNotifications[i].Status = StatusUnknownError
 	}
 
 	// Write the new status to the database.
@@ -72,18 +79,36 @@ func notificationsWorker(db *sqlx.DB, client *expo.PushClient) (err error) {
 		return fmt.Errorf("failed to update notification status: %w", err)
 	}
 
+	// Remove tokens from users table for unregistered users.
+	err = model.RemovePushTokens(db, unregisteredUsers)
+	if err != nil {
+		return fmt.Errorf("failed to update remove unregistered push tokens from users: %w", err)
+	}
+
 	return nil
 
 }
 
-func NotificationsWorkerWrapper(db *sqlx.DB, client *expo.PushClient) {
+func SendNotificationsWrapper(db *sqlx.DB, client *expo.PushClient) {
 	for {
 		log.Println("Notifications worker started.")
-		if err := notificationsWorker(db, client); err != nil {
+		if err := SendNotifications(db, client); err != nil {
 			log.Printf("Notifications worker failed: %v\n", err.Error())
 		} else {
 			log.Println("Notifications worker finished.")
 		}
 		time.Sleep(15 * time.Second)
+	}
+}
+
+func EnqueueAnnouncementNotificationsWrapper(db *sqlx.DB) {
+	for {
+		log.Println("Starting to enqueue announcement notifications.")
+		if err := model.EnqueueAnnouncementNotifications(db); err != nil {
+			log.Printf("Failed to enqueue announcementn notifications: %v\n", err.Error())
+		} else {
+			log.Println("Finished enqueuing announcement notifications.")
+		}
+		time.Sleep(60 * time.Second)
 	}
 }

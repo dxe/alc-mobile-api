@@ -9,7 +9,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 
@@ -74,9 +73,9 @@ func main() {
 	// TODO: Consider not doing this each time the application loads.
 	// It may be better to do it via a script instead.
 	if !*flagProd {
-		model.WipeDatabase(db, *flagProd)
-		model.InitDatabase(db)
-		model.InsertMockData(db, *flagProd)
+		//model.WipeDatabase(db, *flagProd)
+		//model.InitDatabase(db)
+		//model.InsertMockData(db, *flagProd)
 	}
 
 	clientID := config("OAUTH_CLIENT_ID")
@@ -194,13 +193,8 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	// Start go routines for queueing and sending notifications.
-	go func() {
-		for {
-			model.EnqueueAnnouncementNotifications(db)
-			time.Sleep(1 * time.Minute)
-		}
-	}()
-	go NotificationsWorkerWrapper(db, expoPushClient)
+	go EnqueueAnnouncementNotificationsWrapper(db)
+	go SendNotificationsWrapper(db, expoPushClient)
 
 	log.Println("Server started. Listening on port 8080.")
 	server := &http.Server{Addr: ":8080", Handler: mux}
