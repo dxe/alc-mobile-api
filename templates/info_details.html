@@ -39,14 +39,15 @@
           <label class="label">Icon</label>
           <div class="select">
               <select name="Icon">
-                  <option value="exclamation-triangle" {{if eq .PageData.Icon "exclamation-triangle"}}selected{{end}}>Alert</option>
-                  <option value="newspaper-o" {{if eq .PageData.Icon "newspaper-o"}}selected{{end}}>News</option>
-                  <option value="cloud" {{if eq .PageData.Icon "cloud"}}selected{{end}}>Weather</option>
-                  <option value="bus" {{if eq .PageData.Icon "bus"}}selected{{end}}>Transportation</option>
-                  <option value="question" {{if eq .PageData.Icon "question"}}selected{{end}}>Question</option>
-                  <option value="handshake-o" {{if eq .PageData.Icon "handshake-o"}}selected{{end}}>Handshake</option>
-                  <option value="envelope-o" {{if eq .PageData.Icon "envelope-o"}}selected{{end}}>Envelope</option>
-                  <option value="microphone" {{if eq .PageData.Icon "microphone"}}selected{{end}}>Microphone</option>
+                <option value="exclamation-triangle" {{if eq .PageData.Icon "exclamation-triangle"}}selected{{end}}>Alert</option>
+                <option value="newspaper-o" {{if eq .PageData.Icon "newspaper"}}selected{{end}}>News</option>
+                <option value="cloud" {{if eq .PageData.Icon "cloud-sun"}}selected{{end}}>Weather</option>
+                <option value="bus" {{if eq .PageData.Icon "subway"}}selected{{end}}>Transportation</option>
+                <option value="question" {{if eq .PageData.Icon "question"}}selected{{end}}>Question</option>
+                <option value="handshake-o" {{if eq .PageData.Icon "handshake"}}selected{{end}}>Handshake</option>
+                <option value="envelope-o" {{if eq .PageData.Icon "envelope"}}selected{{end}}>Envelope</option>
+                <option value="microphone" {{if eq .PageData.Icon "microphone"}}selected{{end}}>Microphone</option>
+                <option value="virus" {{if eq .PageData.Icon "virus"}}selected{{end}}>Virus</option>
               </select>
           </div>
         </div>
