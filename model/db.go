@@ -17,6 +17,8 @@ func NewDB(dsn string) *sqlx.DB {
 	}
 	ping(ctx, db, time.Now().Add(time.Minute))
 
+	db.SetConnMaxIdleTime(30 * time.Minute)
+
 	log.Println("connected to database")
 	// TODO(jhobbs): Init db here or in main?
 	InitDatabase(db)
