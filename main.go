@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/coreos/go-oidc"
@@ -107,7 +108,9 @@ func main() {
 
 	handle := func(path string, method func(*server)) {
 		mux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+			start := time.Now()
 			method(newServer(w, r))
+			log.Printf("Handled request %v in %v.", path, time.Since(start))
 		})
 	}
 
