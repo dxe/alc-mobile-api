@@ -133,6 +133,8 @@ CREATE TABLE IF NOT EXISTS announcements (
 	title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
     icon VARCHAR(30) NOT NULL,
+    url VARCHAR(512) NOT NULL,
+	url_text VARCHAR(100) NOT NULL,
     created_by VARCHAR(100) NOT NULL,
     send_time DATETIME,
     sent TINYINT NOT NULL DEFAULT '0',

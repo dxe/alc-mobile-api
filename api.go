@@ -107,6 +107,8 @@ select json_arrayagg(json_object(
   'message',    a.message,
   'icon',       a.icon,
   'created_by', a.created_by,
+  'url', 		a.url,
+  'url_text', 	a.url_text,
   'send_time',  a.send_time,
   'sent',       a.sent != 0` /* TODO(mdempsky): Change SQL schema to use bool. */ + `
 ))

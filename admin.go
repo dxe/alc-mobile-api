@@ -428,6 +428,8 @@ func (s *server) adminAnnouncementSave() {
 		Title:        s.r.Form.Get("Title"),
 		Message:      s.r.Form.Get("Message"),
 		Icon:         s.r.Form.Get("Icon"),
+		URL:          s.r.Form.Get("URL"),
+		URLText:      s.r.Form.Get("URLText"),
 		CreatedBy:    s.email,
 		SendTime:     sendTime.Format(dbTimeLayout),
 	}
