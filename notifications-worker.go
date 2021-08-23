@@ -65,6 +65,7 @@ func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
 		switch {
 		case r.Status == expo.SuccessStatus:
 			validNotifications[i].Status = StatusSent
+			validNotifications[i].Receipt = r.ID
 		case r.Details["error"] == expo.ErrorDeviceNotRegistered:
 			validNotifications[i].Status = StatusDeviceNotRegistered
 			unregisteredUsers = append(unregisteredUsers, validNotifications[i].UserID)

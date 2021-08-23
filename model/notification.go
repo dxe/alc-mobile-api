@@ -126,9 +126,9 @@ func UpdateNotificationStatus(db *sqlx.DB, notifications []Notification) error {
 	// It seems that sqlx doesn't let you use NamedExec with a slice of structs
 	// when doing an UPDATE, so we will do an INSERT ... ON DUPLICATE KEY UPDATE instead.
 	query := `
-INSERT INTO notifications (user_id, announcement_id, status)
-VALUES (:user_id, :announcement_id, :status)
-ON DUPLICATE KEY UPDATE status=VALUES(status)
+INSERT INTO notifications (user_id, announcement_id, status, receipt)
+VALUES (:user_id, :announcement_id, :status, :receipt)
+ON DUPLICATE KEY UPDATE status=VALUES(status), receipt=VALUES(receipt)
 `
 	_, err := db.NamedExec(query, notifications)
 	if err != nil {
