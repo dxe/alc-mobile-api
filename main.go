@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
+	expo "github.com/jakehobbs/exponent-server-sdk-golang/sdk"
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/coreos/go-oidc"

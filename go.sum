@@ -104,8 +104,6 @@ github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5m
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
-github.com/jakehobbs/exponent-server-sdk-golang v0.0.0-20210824030844-92a3460be973 h1:29jEqDcTduaC4gFDE/Aki7zeNalY7WBg9HWriQ2D+Io=
-github.com/jakehobbs/exponent-server-sdk-golang v0.0.0-20210824030844-92a3460be973/go.mod h1:MGdn7+XfhKupe6sKwLvzvKu1MhfACfMC35jbzT7OuJA=
 github.com/jakehobbs/exponent-server-sdk-golang v0.0.0-20210824033332-ffcc939b98d7 h1:Yjz6aRjIBTfvloTPYZVuEH3Kv982itTvPvxwLynn3VE=
 github.com/jakehobbs/exponent-server-sdk-golang v0.0.0-20210824033332-ffcc939b98d7/go.mod h1:MGdn7+XfhKupe6sKwLvzvKu1MhfACfMC35jbzT7OuJA=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
