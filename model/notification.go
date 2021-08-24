@@ -33,7 +33,7 @@ INSERT IGNORE into notifications (user_id, announcement_id, status)
 	SELECT users.id as user_id, announcements.id as announcement_id, "Queued" as status
 	FROM announcements
 	JOIN users ON users.conference_id = announcements.conference_id
-	WHERE sent = 0 AND send_time <= NOW() AND expo_push_token like "ExponentPushToken[%]"
+	WHERE sent = 0 AND send_time <= UTC_TIMESTAMP AND expo_push_token like "ExponentPushToken[%]"
 	ORDER BY send_time asc
 `
 	results, err := db.Exec(insertQuery)
