@@ -1,6 +1,10 @@
 package model
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+
+	"github.com/jmoiron/sqlx"
+)
 
 type User struct {
 	ID            int    `db:"id"`
@@ -31,4 +35,27 @@ select
 		return 0, err
 	}
 	return results[0], nil
+}
+
+func RemovePushTokens(ctx context.Context, db *sqlx.DB, userIDs []int) error {
+	if len(userIDs) == 0 {
+		return nil
+	}
+
+	query := `UPDATE users
+SET expo_push_token = null
+WHERE id in (?)
+`
+
+	query, args, err := sqlx.In(query, userIDs)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
