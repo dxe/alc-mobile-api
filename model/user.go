@@ -1,6 +1,8 @@
 package model
 
 import (
+	"context"
+
 	"github.com/jmoiron/sqlx"
 )
 
@@ -35,7 +37,7 @@ select
 	return results[0], nil
 }
 
-func RemovePushTokens(db *sqlx.DB, userIDs []int) error {
+func RemovePushTokens(ctx context.Context, db *sqlx.DB, userIDs []int) error {
 	if len(userIDs) == 0 {
 		return nil
 	}
@@ -50,7 +52,7 @@ WHERE id in (?)
 		return err
 	}
 
-	_, err = db.Exec(query, args...)
+	_, err = db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return err
 	}

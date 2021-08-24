@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"time"
 
 	"github.com/dxe/alc-mobile-api/model"
+	expo "github.com/jakehobbs/exponent-server-sdk-golang/sdk"
 	"github.com/jmoiron/sqlx"
-	expo "github.com/oliveroneill/exponent-server-sdk-golang/sdk"
 )
 
 func filterValidTokens(notifications []model.Notification) ([]model.Notification, []expo.PushMessage) {
@@ -49,8 +50,10 @@ func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
 
 	validNotifications, validExpoMessages := filterValidTokens(notifications)
 
-	// TODO: use context to cancel if this takes too long?
-	expoResponses, err := client.PublishMultiple(validExpoMessages)
+	ctx, cancel := context.WithDeadline(context.Background(), fiveMinFromNow)
+	defer cancel()
+
+	expoResponses, err := client.PublishMultipleWithContext(ctx, validExpoMessages)
 	if err != nil {
 		return fmt.Errorf("failed to publish messages via expo api: %w", err)
 	}
@@ -75,13 +78,13 @@ func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
 	}
 
 	// Write the new status to the database.
-	err = model.UpdateNotificationStatus(db, validNotifications)
+	err = model.UpdateNotificationStatus(ctx, db, validNotifications)
 	if err != nil {
 		return fmt.Errorf("failed to update notification status: %w", err)
 	}
 
 	// Remove tokens from users table for unregistered users.
-	err = model.RemovePushTokens(db, unregisteredUsers)
+	err = model.RemovePushTokens(ctx, db, unregisteredUsers)
 	if err != nil {
 		return fmt.Errorf("failed to update remove unregistered push tokens from users: %w", err)
 	}

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strconv"
@@ -122,7 +123,7 @@ func SelectNotificationsToSend(db *sqlx.DB, now, deadline time.Time) ([]Notifica
 	return notifications, nil
 }
 
-func UpdateNotificationStatus(db *sqlx.DB, notifications []Notification) error {
+func UpdateNotificationStatus(ctx context.Context, db *sqlx.DB, notifications []Notification) error {
 	// It seems that sqlx doesn't let you use NamedExec with a slice of structs
 	// when doing an UPDATE, so we will do an INSERT ... ON DUPLICATE KEY UPDATE instead.
 	query := `
@@ -130,7 +131,7 @@ INSERT INTO notifications (user_id, announcement_id, status, receipt)
 VALUES (:user_id, :announcement_id, :status, :receipt)
 ON DUPLICATE KEY UPDATE status=VALUES(status), receipt=VALUES(receipt)
 `
-	_, err := db.NamedExec(query, notifications)
+	_, err := db.NamedExecContext(ctx, query, notifications)
 	if err != nil {
 		return err
 	}
