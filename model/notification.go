@@ -60,7 +60,7 @@ WHERE id in (SELECT DISTINCT announcement_id FROM notifications) AND sent = 0
 	return nil
 }
 
-func SelectNotificationsToSend(db *sqlx.DB, now, deadline time.Time) ([]Notification, error) {
+func SelectNotificationsToSend(ctx context.Context, db *sqlx.DB, now, deadline time.Time) ([]Notification, error) {
 	var notifications []Notification
 
 	err := transact(db, func(tx *sqlx.Tx) error {
@@ -78,12 +78,12 @@ func SelectNotificationsToSend(db *sqlx.DB, now, deadline time.Time) ([]Notifica
 			WHERE
 				notifications.status in ("Queued", "Leased")
 				AND expo_push_token like "ExponentPushToken[%]"
-				AND lease_expiration <= ?
+				AND lease_expiration < ?
 			LIMIT 100
 			FOR UPDATE SKIP LOCKED
 		`
 
-		if err := tx.Select(&notifications, selectQuery, now.Unix()); err != nil {
+		if err := tx.SelectContext(ctx, &notifications, selectQuery, now.Unix()); err != nil {
 			return fmt.Errorf("select query failed: %w", err)
 		}
 
@@ -109,7 +109,7 @@ func SelectNotificationsToSend(db *sqlx.DB, now, deadline time.Time) ([]Notifica
 			return fmt.Errorf("failed to prepare query using IN clause: %w", err)
 		}
 
-		if _, err := tx.Query(query, args...); err != nil {
+		if _, err := tx.QueryContext(ctx, query, args...); err != nil {
 			return fmt.Errorf("update query failed: %w", err)
 		}
 

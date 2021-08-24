@@ -11,7 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func filterValidTokens(notifications []model.Notification) ([]model.Notification, []expo.PushMessage) {
+func createExpoMessages(notifications []model.Notification) ([]model.Notification, []expo.PushMessage) {
 	var validNotifications []model.Notification
 	var messages []expo.PushMessage
 	for _, n := range notifications {
@@ -39,7 +39,10 @@ func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
 	currentTime := time.Now()
 	fiveMinFromNow := time.Now().Add(5 * time.Minute)
 
-	notifications, err := model.SelectNotificationsToSend(db, currentTime, fiveMinFromNow)
+	ctx, cancel := context.WithDeadline(context.Background(), fiveMinFromNow)
+	defer cancel()
+
+	notifications, err := model.SelectNotificationsToSend(ctx, db, currentTime, fiveMinFromNow)
 	if err != nil {
 		return err
 	}
@@ -48,10 +51,7 @@ func SendNotifications(db *sqlx.DB, client *expo.PushClient) (err error) {
 		return nil
 	}
 
-	validNotifications, validExpoMessages := filterValidTokens(notifications)
-
-	ctx, cancel := context.WithDeadline(context.Background(), fiveMinFromNow)
-	defer cancel()
+	validNotifications, validExpoMessages := createExpoMessages(notifications)
 
 	expoResponses, err := client.PublishMultipleWithContext(ctx, validExpoMessages)
 	if err != nil {
@@ -109,7 +109,7 @@ func EnqueueAnnouncementNotificationsWrapper(db *sqlx.DB) {
 	for {
 		log.Println("Starting to enqueue announcement notifications.")
 		if err := model.EnqueueAnnouncementNotifications(db); err != nil {
-			log.Printf("Failed to enqueue announcementn notifications: %v\n", err.Error())
+			log.Printf("Failed to enqueue announcement notifications: %v\n", err.Error())
 		} else {
 			log.Println("Finished enqueuing announcement notifications.")
 		}
