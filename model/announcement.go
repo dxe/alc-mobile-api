@@ -37,7 +37,7 @@ SELECT id, conference_id, title, message, icon, created_by,
        ` + timeQuery + `,
        sent, url, url_text
 FROM announcements
-ORDER BY announcements.send_time asc
+ORDER BY announcements.send_time desc
 `
 	if !options.IncludeScheduled {
 		query += " AND sent = 1"
