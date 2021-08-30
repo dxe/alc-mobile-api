@@ -12,7 +12,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - name: Run tests
+        run: |
+          make test
       - name: Build image & push to ECR
+        if: ${{ github.event_name == 'push' }}  # don't deploy branches
         uses: kciter/aws-ecr-action@master
         with:
           access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -22,6 +26,3 @@ jobs:
           region: us-west-2
           tags: latest,${{ github.sha }}
           dockerfile: Dockerfile-prod
-      - name: Run tests
-        run: |
-          make test
