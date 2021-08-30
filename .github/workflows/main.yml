@@ -20,3 +20,6 @@ jobs:
           region: us-west-2
           tags: latest,${{ github.sha }}
           dockerfile: Dockerfile-prod
+      - name: Run tests
+        run: |
+          make test
