@@ -65,11 +65,15 @@ func getDSN() string {
 
 func main() {
 	flag.Parse()
+	db := model.NewDB(getDSN())
+	main0(db)
+}
+
+func main0(db *sqlx.DB) {
+	flag.Parse()
 
 	// TODO(mdempsky): Generalize.
 	mux := http.NewServeMux()
-
-	db := model.NewDB(getDSN())
 
 	// TODO: Consider not doing this each time the application loads.
 	// It may be better to do it via a script instead.
