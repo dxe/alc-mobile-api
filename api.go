@@ -146,12 +146,13 @@ select json_object(
 'conference', (select json_object('id', id, 'name', name, 'start_date', start_date, 'end_date', end_date) from conferences where id = :conference_id),
 
 'events', json_arrayagg(json_object(
-  'id',            e.id,
-  'name',          e.name,
-  'description',   e.description,
-  'start_time',    e.start_time,
-  'length',        e.length,
-  'key_event',     e.key_event != 0,` /* TODO(mdempsky): Change SQL schema to use bool */ + `
+  'id',               e.id,
+  'name',             e.name,
+  'description',      e.description,
+  'start_time',       e.start_time,
+  'length',           e.length,
+  'key_event',     	  e.key_event != 0,` /* TODO(mdempsky): Change SQL schema to use bool */ + `
+  'breakout_session', e.breakout_session != 0,` /* TODO(mdempsky): Change SQL schema to use bool */ + `
   'location',      json_object(
  		'name', l.name,
 		'place_id', l.place_id,

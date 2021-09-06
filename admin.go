@@ -238,6 +238,11 @@ func (s *server) adminEventSave() {
 		keyEvent = true
 	}
 
+	var breakoutSession bool
+	if s.r.Form.Get("BreakoutSession") == "on" {
+		breakoutSession = true
+	}
+
 	length, err := strconv.Atoi(s.r.Form.Get("Length"))
 	if err != nil {
 		s.adminError(err)
@@ -275,15 +280,16 @@ func (s *server) adminEventSave() {
 	}
 
 	event := model.Event{
-		ID:           id,
-		ConferenceID: conferenceID,
-		Name:         s.r.Form.Get("Name"),
-		Description:  s.r.Form.Get("Description"),
-		StartTime:    startTime.Format(dbTimeLayout),
-		Length:       length,
-		KeyEvent:     keyEvent,
-		LocationID:   locationID,
-		ImageURL:     imageURL,
+		ID:              id,
+		ConferenceID:    conferenceID,
+		Name:            s.r.Form.Get("Name"),
+		Description:     s.r.Form.Get("Description"),
+		StartTime:       startTime.Format(dbTimeLayout),
+		Length:          length,
+		KeyEvent:        keyEvent,
+		BreakoutSession: breakoutSession,
+		LocationID:      locationID,
+		ImageURL:        imageURL,
 	}
 
 	// update the database

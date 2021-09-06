@@ -111,6 +111,7 @@ CREATE TABLE IF NOT EXISTS events (
     location_id INTEGER,
     image_url VARCHAR(128),
     key_event TINYINT NOT NULL DEFAULT '0',
+    breakout_session TINYINT NOT NULL DEFAULT '0',
     FOREIGN KEY (conference_id) REFERENCES conferences(id),
     FOREIGN KEY (location_id) REFERENCES locations(id)
 )

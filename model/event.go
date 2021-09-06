@@ -9,18 +9,16 @@ import (
 )
 
 type Event struct {
-	ID           int            `db:"id"`
-	ConferenceID int            `db:"conference_id"`
-	Name         string         `db:"name"`
-	Description  string         `db:"description"`
-	StartTime    string         `db:"start_time"`
-	Length       int            `db:"length"`
-	KeyEvent     bool           `db:"key_event"`
-	LocationID   int            `db:"location_id"`
-	ImageURL     sql.NullString `db:"image_url"`
-	//AttendeeCount int `db:"attendee_count" json:"attendee_count"` // TODO(jhobbs): Get this data from database after we have some RSVP data.
-	//Attendees []string `db:"attendees" json:"attendees"` // TODO(jhobbs): Get this data from the database after we have some RSVP data.
-	//Attending  bool          `db:"attending" json:"attending,omitempty"` // TODO(jhobbs): Get this data from database when listing events w/ RSVP status.
+	ID              int            `db:"id"`
+	ConferenceID    int            `db:"conference_id"`
+	Name            string         `db:"name"`
+	Description     string         `db:"description"`
+	StartTime       string         `db:"start_time"`
+	Length          int            `db:"length"`
+	KeyEvent        bool           `db:"key_event"`
+	BreakoutSession bool           `db:"breakout_session"`
+	LocationID      int            `db:"location_id"`
+	ImageURL        sql.NullString `db:"image_url"`
 }
 
 type EventOptions struct {
@@ -34,7 +32,7 @@ func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
 	}
 
 	// TODO(jhobbs): Join the Location table to provide full Location information.
-	query := `SELECT id, conference_id, name, description, ` + timeQuery + `, length, key_event, location_id, image_url
+	query := `SELECT id, conference_id, name, description, ` + timeQuery + `, length, key_event, breakout_session, location_id, image_url
 FROM events
 ORDER BY events.start_time asc
 `
@@ -51,7 +49,7 @@ ORDER BY events.start_time asc
 
 func GetEventByID(db *sqlx.DB, id string) (Event, error) {
 	const query = `
-SELECT id, conference_id, name, description, start_time, length, key_event, location_id, image_url
+SELECT id, conference_id, name, description, start_time, length, key_event, breakout_session, location_id, image_url
 FROM events
 WHERE id = ?
 `
@@ -74,8 +72,8 @@ func SaveEvent(db *sqlx.DB, event Event) error {
 
 func insertEvent(db *sqlx.DB, event Event) error {
 	query := `
-INSERT INTO events (conference_id, name, description, start_time, length, key_event, location_id, image_url)
-VALUES (:conference_id, TRIM(:name), TRIM(:description), :start_time, :length, :key_event, :location_id, :image_url)
+INSERT INTO events (conference_id, name, description, start_time, length, key_event, breakout_session, location_id, image_url)
+VALUES (:conference_id, TRIM(:name), TRIM(:description), :start_time, :length, :key_event, :breakout_session, :location_id, :image_url)
 `
 	if _, err := db.NamedExec(query, event); err != nil {
 		return fmt.Errorf("failed to insert event: %w", err)
@@ -87,7 +85,7 @@ func updateEvent(db *sqlx.DB, event Event) error {
 	query := `
 UPDATE events
 SET conference_id = :conference_id, name = TRIM(:name), description = TRIM(:description), start_time = :start_time, length = :length,
-    key_event = :key_event, location_id = :location_id, image_url = :image_url
+    key_event = :key_event, breakout_session = :breakout_session, location_id = :location_id, image_url = :image_url
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, event); err != nil {
