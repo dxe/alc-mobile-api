@@ -357,6 +357,11 @@ func (s *server) adminInfoSave() {
 		return
 	}
 
+	var keyInfo bool
+	if s.r.Form.Get("KeyInfo") == "on" {
+		keyInfo = true
+	}
+
 	var imageURL sql.NullString
 
 	file, fileHeader, err := s.r.FormFile("Image")
@@ -395,6 +400,7 @@ func (s *server) adminInfoSave() {
 		Icon:         s.r.Form.Get("Icon"),
 		DisplayOrder: displayOrder,
 		ImageURL:     imageURL,
+		KeyInfo:      keyInfo,
 	}
 
 	// update the database

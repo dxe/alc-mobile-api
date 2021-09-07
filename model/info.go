@@ -16,6 +16,7 @@ type Info struct {
 	Icon         string         `db:"icon"`
 	DisplayOrder int            `db:"display_order"`
 	ImageURL     sql.NullString `db:"image_url"`
+	KeyInfo      bool           `db:"key_info"`
 }
 
 func ListInfo(db *sqlx.DB) ([]Info, error) {
@@ -32,7 +33,7 @@ func ListInfo(db *sqlx.DB) ([]Info, error) {
 
 func GetInfoByID(db *sqlx.DB, id string) (Info, error) {
 	const query = `
-SELECT id, title, subtitle, content, icon, display_order, image_url
+SELECT id, title, subtitle, content, icon, display_order, image_url, key_info
 FROM info
 WHERE id = ?
 `
@@ -55,8 +56,8 @@ func SaveInfo(db *sqlx.DB, info Info) error {
 
 func insertInfo(db *sqlx.DB, info Info) error {
 	query := `
-INSERT INTO info (title, subtitle, content, icon, display_order, image_url)
-VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order, :image_url)
+INSERT INTO info (title, subtitle, content, icon, display_order, image_url, key_info)
+VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order, :image_url, :key_info)
 `
 	if _, err := db.NamedExec(query, info); err != nil {
 		return fmt.Errorf("failed to insert info: %w", err)
@@ -67,7 +68,7 @@ VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order, :i
 func updateInfo(db *sqlx.DB, info Info) error {
 	query := `
 UPDATE info
-SET title = TRIM(:title), subtitle = TRIM(:subtitle), content = TRIM(:content), icon = :icon, display_order = :display_order, image_url = :image_url
+SET title = TRIM(:title), subtitle = TRIM(:subtitle), content = TRIM(:content), icon = :icon, display_order = :display_order, image_url = :image_url, key_info = :key_info
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, info); err != nil {

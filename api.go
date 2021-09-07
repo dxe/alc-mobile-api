@@ -200,7 +200,8 @@ select json_arrayagg(json_object(
   'content',       i.content,
   'icon',          i.icon,
   'image_url',     i.image_url,
-  'display_order', i.display_order
+  'display_order', i.display_order,
+  'key_info',      i.key_info,
 ))
 from info i
 order by i.display_order
