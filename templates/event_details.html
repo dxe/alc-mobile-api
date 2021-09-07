@@ -87,7 +87,7 @@
         </div>
 
         <div class="field" id="file-upload">
-          <label class="label">Image</label>
+          <label class="label">Image (currently not displayed in app)</label>
           <div class="file has-name">
             <label class="file-label">
             <input id="file-input" class="file-input" type="file" name="Image" accept="image/jpeg">
@@ -102,10 +102,8 @@
             </label>
           </div>
           {{if .PageData.Event.ImageURL.Valid}}
-            <a id="remove-image-button" onclick="clearFileName()">Remove image</a>
-            <figure class="image is-128x128 m-2" id="image-preview">
-              <img src="{{.PageData.Event.ImageURL.String}}">
-            </figure>
+            <a id="remove-image-button" onclick="clearFileName()">Remove image</a><br/>
+            <a href="{{.PageData.Event.ImageURL.String}}" target="_blank">Download image</a>
           {{end}}
         </div>
 

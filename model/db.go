@@ -136,7 +136,8 @@ CREATE TABLE IF NOT EXISTS info (
     subtitle VARCHAR(200) NOT NULL,
     content TEXT,
     icon VARCHAR(30),
-    display_order INTEGER NOT NULL
+    display_order INTEGER NOT NULL,
+    image_url VARCHAR(128)
 )
 `)
 

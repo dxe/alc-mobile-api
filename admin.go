@@ -334,6 +334,12 @@ func (s *server) adminInfoDetails() {
 }
 
 func (s *server) adminInfoSave() {
+	maxImgSize := int64(1024 * 1000 * 5) // allow only 5MB of file size
+	if err := s.r.ParseMultipartForm(maxImgSize); err != nil {
+		s.adminError(fmt.Errorf("failed to parse form (image over 5MB?): %w", err))
+		return
+	}
+
 	if err := s.r.ParseForm(); err != nil {
 		s.adminError(err)
 		return
@@ -351,6 +357,36 @@ func (s *server) adminInfoSave() {
 		return
 	}
 
+	var imageURL sql.NullString
+
+	file, fileHeader, err := s.r.FormFile("Image")
+	switch err {
+	case nil:
+		defer file.Close()
+		// Handle the new file upload
+		image, err := ResizeJPG(file, 1200)
+		if err != nil {
+			s.adminError(fmt.Errorf("failed to resize image: %w", err))
+			return
+		}
+		imageURL.String, err = UploadFileToS3(s.awsSession, image, fileHeader.Filename)
+		if err != nil {
+			s.adminError(fmt.Errorf("failed to upload file: %w", err))
+			return
+		}
+	case http.ErrMissingFile:
+		// No file provided, so just use the existing URL
+		imageURL.String = s.r.Form.Get("ImageURL")
+	default:
+		// Unexpected error
+		s.adminError(fmt.Errorf("failed to get uploaded file: %w", err))
+		return
+	}
+
+	if imageURL.String != "" {
+		imageURL.Valid = true
+	}
+
 	info := model.Info{
 		ID:           id,
 		Title:        s.r.Form.Get("Title"),
@@ -358,6 +394,7 @@ func (s *server) adminInfoSave() {
 		Content:      s.r.Form.Get("Content"),
 		Icon:         s.r.Form.Get("Icon"),
 		DisplayOrder: displayOrder,
+		ImageURL:     imageURL,
 	}
 
 	// update the database

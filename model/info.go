@@ -1,6 +1,7 @@
 package model
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -8,12 +9,13 @@ import (
 )
 
 type Info struct {
-	ID           int    `db:"id"`
-	Title        string `db:"title"`
-	Subtitle     string `db:"subtitle"`
-	Content      string `db:"content"`
-	Icon         string `db:"icon"`
-	DisplayOrder int    `db:"display_order"`
+	ID           int            `db:"id"`
+	Title        string         `db:"title"`
+	Subtitle     string         `db:"subtitle"`
+	Content      string         `db:"content"`
+	Icon         string         `db:"icon"`
+	DisplayOrder int            `db:"display_order"`
+	ImageURL     sql.NullString `db:"image_url"`
 }
 
 func ListInfo(db *sqlx.DB) ([]Info, error) {
@@ -30,7 +32,7 @@ func ListInfo(db *sqlx.DB) ([]Info, error) {
 
 func GetInfoByID(db *sqlx.DB, id string) (Info, error) {
 	const query = `
-SELECT id, title, subtitle, content, icon, display_order
+SELECT id, title, subtitle, content, icon, display_order, image_url
 FROM info
 WHERE id = ?
 `
@@ -53,8 +55,8 @@ func SaveInfo(db *sqlx.DB, info Info) error {
 
 func insertInfo(db *sqlx.DB, info Info) error {
 	query := `
-INSERT INTO info (title, subtitle, content, icon, display_order)
-VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order)
+INSERT INTO info (title, subtitle, content, icon, display_order, image_url)
+VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order, :image_url)
 `
 	if _, err := db.NamedExec(query, info); err != nil {
 		return fmt.Errorf("failed to insert info: %w", err)
@@ -65,7 +67,7 @@ VALUES (TRIM(:title), TRIM(:subtitle), TRIM(:content), :icon, :display_order)
 func updateInfo(db *sqlx.DB, info Info) error {
 	query := `
 UPDATE info
-SET title = TRIM(:title), subtitle = TRIM(:subtitle), content = TRIM(:content), icon = :icon, display_order = :display_order
+SET title = TRIM(:title), subtitle = TRIM(:subtitle), content = TRIM(:content), icon = :icon, display_order = :display_order, image_url = :image_url
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, info); err != nil {
