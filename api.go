@@ -199,6 +199,7 @@ select json_arrayagg(json_object(
   'subtitle',      i.subtitle,
   'content',       i.content,
   'icon',          i.icon,
+  'image_url',     i.image_url,
   'display_order', i.display_order
 ))
 from info i
