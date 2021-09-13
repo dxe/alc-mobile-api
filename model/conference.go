@@ -13,6 +13,8 @@ type Conference struct {
 	Name      string `db:"name"`
 	StartDate string `db:"start_date"`
 	EndDate   string `db:"end_date"`
+	StartDateUtc string `db:"start_date_utc"`
+	EndDateUtc   string `db:"end_date_utc"`
 }
 
 type ConferenceOptions struct {
@@ -28,7 +30,11 @@ func ListConferences(db *sqlx.DB, options ConferenceOptions) ([]Conference, erro
 		endTimeQuery = `DATE_FORMAT(CONVERT_TZ(end_date, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as end_date`
 	}
 
-	query := `SELECT id, name,` + startTimeQuery + `,` + endTimeQuery + ` FROM conferences`
+	query := `SELECT id, name,` +
+		startTimeQuery +
+		`,` +
+		endTimeQuery +
+		`, start_date as start_date_utc, end_date as end_date_utc FROM conferences`
 	var conferences []Conference
 	if err := db.Select(&conferences, query); err != nil {
 		return conferences, fmt.Errorf("failed to list conferences: %w", err)

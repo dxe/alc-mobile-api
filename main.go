@@ -27,9 +27,9 @@ var (
 
 func config(key string) string {
 	v := os.Getenv(key)
-	if v == "" {
-		log.Fatalf("missing configuration for %v", key)
-	}
+	// if v == "" {
+	// 	log.Fatalf("missing configuration for %v", key)
+	// }
 	return v
 }
 
