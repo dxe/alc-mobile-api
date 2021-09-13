@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dxe/alc-mobile-api/model"
+	"github.com/dxe/alc-mobile-api/main/model"
 )
 
 func (s *server) admin() {

@@ -15,7 +15,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/coreos/go-oidc"
-	"github.com/dxe/alc-mobile-api/model"
+	"github.com/dxe/alc-mobile-api/main/model"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/oauth2"

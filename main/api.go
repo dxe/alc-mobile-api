@@ -10,7 +10,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/dxe/alc-mobile-api/model"
+	"github.com/dxe/alc-mobile-api/main/model"
 )
 
 type api struct {

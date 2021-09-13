@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/dxe/alc-mobile-api/model"
+	"github.com/dxe/alc-mobile-api/main/model"
 	expo "github.com/jakehobbs/exponent-server-sdk-golang/sdk"
 	"github.com/jmoiron/sqlx"
 )
