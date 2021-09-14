@@ -36,6 +36,7 @@ func UploadFileToS3(s *session.Session, file []byte, name string) (string, error
 
 	timestamp := strconv.Itoa(int(time.Now().Unix()))
 	fileName := filepath.Base(name) + "." + timestamp + filepath.Ext(name)
+	maxAgeOneYear := aws.String("max-age=31536000")
 
 	_, err := s3.New(s).PutObject(&s3.PutObjectInput{
 		Bucket:             aws.String(bucket),
@@ -45,6 +46,7 @@ func UploadFileToS3(s *session.Session, file []byte, name string) (string, error
 		ContentType:        aws.String(http.DetectContentType(file)),
 		ContentDisposition: aws.String("attachment"),
 		StorageClass:       aws.String("STANDARD"),
+		Metadata:           map[string]*string{"Cache-Control": maxAgeOneYear}, // 1 year
 	})
 	if err != nil {
 		return "", err
