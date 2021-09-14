@@ -148,6 +148,7 @@ CREATE TABLE IF NOT EXISTS announcements (
 	conference_id INTEGER,
 	title VARCHAR(200) NOT NULL,
     message TEXT NOT NULL,
+    long_message TEXT NOT NULL,
     icon VARCHAR(30) NOT NULL,
     url VARCHAR(512) NOT NULL,
 	url_text VARCHAR(100) NOT NULL,

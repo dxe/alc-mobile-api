@@ -13,6 +13,7 @@ type Announcement struct {
 	ConferenceID int    `db:"conference_id"`
 	Title        string `db:"title"`
 	Message      string `db:"message"`
+	LongMessage  string `db:"long_message"`
 	Icon         string `db:"icon"`
 	URL          string `db:"url"`
 	URLText      string `db:"url_text"`
@@ -33,7 +34,7 @@ func ListAnnouncements(db *sqlx.DB, options AnnouncementOptions) ([]Announcement
 	}
 
 	query := `
-SELECT id, conference_id, title, message, icon, created_by,
+SELECT id, conference_id, title, message, long_message, icon, created_by,
        ` + timeQuery + `,
        sent, url, url_text
 FROM announcements
@@ -54,7 +55,7 @@ ORDER BY announcements.send_time desc
 
 func GetAnnouncementByID(db *sqlx.DB, id string) (Announcement, error) {
 	const query = `
-SELECT id, conference_id, title, message, icon, created_by, send_time, sent, url, url_text
+SELECT id, conference_id, title, message, long_message, icon, created_by, send_time, sent, url, url_text
 FROM announcements
 WHERE id = ?
 `
@@ -78,8 +79,8 @@ func SaveAnnouncement(db *sqlx.DB, announcement Announcement) error {
 func insertAnnouncement(db *sqlx.DB, announcement Announcement) error {
 	log.Println("inserting!")
 	query := `
-INSERT INTO announcements (conference_id, title, message, icon, created_by, send_time, url, url_text)
-VALUES (:conference_id, TRIM(:title), TRIM(:message), :icon, :created_by, :send_time, :url, :url_text)
+INSERT INTO announcements (conference_id, title, message, long_message, icon, created_by, send_time, url, url_text)
+VALUES (:conference_id, TRIM(:title), TRIM(:message), TRIM(:long_message), :icon, :created_by, :send_time, :url, :url_text)
 `
 	if _, err := db.NamedExec(query, announcement); err != nil {
 		return fmt.Errorf("failed to insert announcement: %w", err)
@@ -90,7 +91,7 @@ VALUES (:conference_id, TRIM(:title), TRIM(:message), :icon, :created_by, :send_
 func updateAnnouncement(db *sqlx.DB, announcement Announcement) error {
 	query := `
 UPDATE announcements
-SET conference_id = :conference_id, title = TRIM(:title), message = TRIM(:message), icon = :icon, created_by = :created_by, send_time = :send_time, url = TRIM(:url), url_text = TRIM(:url_text)
+SET conference_id = :conference_id, title = TRIM(:title), message = TRIM(:message), long_message = TRIM(:long_message), icon = :icon, created_by = :created_by, send_time = :send_time, url = TRIM(:url), url_text = TRIM(:url_text)
 WHERE id = :id
 `
 	if _, err := db.NamedExec(query, announcement); err != nil {

@@ -32,9 +32,16 @@
       </div>
 
       <div class="field">
-        <label class="label">Message</label>
+        <label class="label">Message Preview</label>
         <div class="control">
-          <textarea class="textarea" name="Message" rows="4" maxlength="240" required>{{.PageData.Message}}</textarea>
+          <textarea class="textarea" name="Message" rows="3" maxlength="240" required>{{.PageData.Message}}</textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="label">Full Message</label>
+        <div class="control">
+          <textarea class="textarea" name="LongMessage" rows="5" maxlength="1000" required>{{.PageData.LongMessage}}</textarea>
         </div>
       </div>
 

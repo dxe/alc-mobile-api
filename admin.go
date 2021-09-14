@@ -476,6 +476,7 @@ func (s *server) adminAnnouncementSave() {
 		ConferenceID: conferenceID,
 		Title:        s.r.Form.Get("Title"),
 		Message:      s.r.Form.Get("Message"),
+		LongMessage:  s.r.Form.Get("LongMessage"),
 		Icon:         s.r.Form.Get("Icon"),
 		URL:          s.r.Form.Get("URL"),
 		URLText:      s.r.Form.Get("URLText"),

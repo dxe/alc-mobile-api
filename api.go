@@ -104,7 +104,7 @@ var apiAnnouncementList = api{
 select json_arrayagg(json_object(
   'id',         a.id,
   'title',      a.title,
-  'message',    a.message,
+  'message',    a.long_message,
   'icon',       a.icon,
   'created_by', a.created_by,
   'url', 		a.url,
