@@ -45,14 +45,5 @@
     </div>
   </div>
 </section>
-<script>
-  console.log("test");
-  const utcDates = document.getElementsByClassName("utcDate");
-  for (const utcDate of utcDates) {
-    const date = new Date(utcDate.textContent);
-    utcDate.textContent = date.toString();
-  }
-
-</script>
 
 {{template "footer.html" .}}
