@@ -12,6 +12,8 @@
             <th>Name</th>
             <th>Start Date (US Pacific)</th>
             <th>End Date (US Pacific)</th>
+            <th>Start Date (Browser Timezone)</th>
+            <th>End Date (Browser Timezone)</th>
             <th></th>
           </tr>
           </thead>
@@ -22,6 +24,8 @@
             <td data-label="Name">{{.Name}}</td>
             <td data-label="Start Date (PT)">{{.StartDate}}</td>
             <td data-label="End Date (PT)">{{.EndDate}}</td>
+            <td data-label="Start Date (Browser timezone)" class="utcDate">{{.StartDateUtc}}</td>
+            <td data-label="Start Date (Browser timezone)" class="utcDate">{{.EndDateUtc}}</td>
             <td class="is-actions-cell">
               <div class="buttons is-right">
                 <a class="button is-small is-primary" href="/admin/conference/details?id={{.ID}}">

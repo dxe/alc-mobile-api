@@ -35,5 +35,14 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<!-- Convert UTC dates -->
+<script>
+  const utcDates = document.getElementsByClassName("utcDate");
+  for (const utcDate of utcDates) {
+    const date = dayjs(utcDate.textContent);
+    utcDate.textContent = `${date.format("ddd, MMM D, YYYY")} at ${date.format("hh:mm A")}`;;
+  }
+</script>
+
 </body>
 </html>
