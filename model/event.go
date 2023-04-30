@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -23,6 +24,7 @@ type Event struct {
 
 type EventOptions struct {
 	ConvertTimeToUSPacific bool
+	ConferenceId           int
 }
 
 func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
@@ -30,10 +32,11 @@ func ListEvents(db *sqlx.DB, options EventOptions) ([]Event, error) {
 	if options.ConvertTimeToUSPacific {
 		timeQuery = `DATE_FORMAT(CONVERT_TZ(start_time, 'UTC','US/Pacific'), "%a, %b %e, %Y at %l:%i %p") as start_time`
 	}
+	whereClause := `WHERE conference_id = ` + strconv.Itoa(options.ConferenceId)
 
 	// TODO(jhobbs): Join the Location table to provide full Location information.
 	query := `SELECT id, conference_id, name, description, ` + timeQuery + `, length, key_event, breakout_session, location_id, image_url
-FROM events
+FROM events ` + whereClause + `
 ORDER BY events.start_time asc
 `
 

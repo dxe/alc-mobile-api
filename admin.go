@@ -167,7 +167,17 @@ func (s *server) adminLocationDelete() {
 }
 
 func (s *server) adminEvents() {
-	eventData, err := model.ListEvents(s.db, model.EventOptions{ConvertTimeToUSPacific: true})
+	var err error
+	conferenceId := configInt("DEFAULT_CONFERENCE_ID")
+	conferenceIdQuery := s.r.URL.Query().Get("conferenceId")
+	if conferenceIdQuery != "" {
+		conferenceId, err = strconv.Atoi(conferenceIdQuery)
+		if err != nil {
+			s.adminError(fmt.Errorf("failed to load locations: %w", err))
+			return
+		}
+	}
+	eventData, err := model.ListEvents(s.db, model.EventOptions{ConvertTimeToUSPacific: true, ConferenceId: conferenceId})
 	if err != nil {
 		panic(err)
 	}

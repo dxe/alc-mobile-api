@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"github.com/coreos/go-oidc"
 	"html/template"
 	"log"
 	"net/http"
@@ -14,7 +15,6 @@ import (
 	expo "github.com/jakehobbs/exponent-server-sdk-golang/sdk"
 
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/coreos/go-oidc"
 	"github.com/dxe/alc-mobile-api/model"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
