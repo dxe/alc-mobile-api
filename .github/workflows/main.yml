@@ -26,3 +26,26 @@ jobs:
           region: us-west-2
           tags: latest,${{ github.sha }}
           dockerfile: Dockerfile-prod
+
+
+  deploy:
+    needs: build
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/create-github-app-token@v3
+        id: token
+        with:
+          client-id: ${{ secrets.DEPLOY_APP_CLIENT_ID }}
+          private-key: ${{ secrets.DEPLOY_APP_PRIVATE_KEY }}
+          owner: dxe
+          repositories: terraform
+
+      - name: Trigger the deploy
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+        run: |
+          gh workflow run deploy-ecs.yml --repo dxe/terraform \
+            -f service=alc-mobile-api \
+            -f tag=${{ github.sha }} \
+            -f caller_run_id=${{ github.run_id }}
