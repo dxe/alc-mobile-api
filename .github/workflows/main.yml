@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - id: sha
+        run: echo "short=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
       - name: Run tests
         run: |
           make test
@@ -24,7 +26,7 @@ jobs:
           account_id: ${{ secrets.AWS_ACCOUNT_ID }}
           repo: dxe/alc-mobile-api
           region: us-west-2
-          tags: latest,${{ github.sha }}
+          tags: latest,${{ steps.sha.outputs.short }}
           dockerfile: Dockerfile-prod
 
 
@@ -47,5 +49,5 @@ jobs:
         run: |
           gh workflow run deploy-ecs.yml --repo dxe/terraform \
             -f service=alc-mobile-api \
-            -f tag=${{ github.sha }} \
+            -f tag="${GITHUB_SHA::7}" \
             -f caller_run_id=${{ github.run_id }}
