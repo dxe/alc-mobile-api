@@ -26,18 +26,3 @@ jobs:
           region: us-west-2
           tags: latest,${{ github.sha }}
           dockerfile: Dockerfile-prod
-
-  # Deploys by committing the new image tag to dxe/terraform, which owns the ECS
-  # service. No AWS credentials here — the terraform repo applies the change, so
-  # `git log ecs.tf` there is the release history and a rollback is `git revert`.
-  #
-  # Only the tag is passed. The registry is assembled on the other side from the
-  # AWS_ACCOUNT_ID org secret, so the account ID stays out of this public repo.
-  deploy:
-    needs: build
-    if: ${{ github.event_name == 'push' }}
-    uses: dxe/terraform/.github/workflows/deploy-ecs.yml@main
-    secrets: inherit
-    with:
-      service: alc-mobile-api
-      tag: ${{ github.sha }}
