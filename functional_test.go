@@ -27,8 +27,6 @@ func TestServer(t *testing.T) {
 	os.Setenv("OAUTH_CLIENT_SECRET", "testVal")
 	os.Setenv("BASE_URL", "testVal")
 	os.Setenv("S3_REGION", "testVal")
-	os.Setenv("S3_AUTH_ID", "testVal")
-	os.Setenv("S3_SECRET", "testVal")
 	go main0(db)
 
 

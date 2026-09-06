@@ -12,21 +12,17 @@ import (
 
 	"github.com/nfnt/resize"
 
-	"github.com/aws/aws-sdk-go/aws/credentials"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
-func NewAWSSession(region, auth, secret string) (*session.Session, error) {
+// NewAWSSession builds a session using the SDK's default credential chain,
+// so on ECS it picks up the task role automatically (and falls back to
+// AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY or ~/.aws for local development).
+func NewAWSSession(region string) (*session.Session, error) {
 	return session.NewSession(&aws.Config{
 		Region: aws.String(region),
-		Credentials: credentials.NewStaticCredentials(
-			auth,
-			secret,
-			"",
-		),
 	})
 }
 
