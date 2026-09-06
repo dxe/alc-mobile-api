@@ -92,10 +92,8 @@ func main0(db *sqlx.DB) {
 	}
 
 	awsRegion := config("S3_REGION")
-	awsAuthID := config("S3_AUTH_ID")
-	awsSecret := config("S3_SECRET")
 
-	awsSession, err := NewAWSSession(awsRegion, awsAuthID, awsSecret)
+	awsSession, err := NewAWSSession(awsRegion)
 	if err != nil {
 		log.Fatalf("failed to create AWS session: %v", err)
 	}
